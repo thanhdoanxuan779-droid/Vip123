@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Tool Lô</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111111">
+
+<style>
+body{margin:0;background:#f2f3f5;font-family:-apple-system}
+.container{max-width:420px;margin:auto;padding:10px}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.tab-btn{
+  flex:1;padding:8px 4px;text-align:center;
+  border-radius:10px;background:#e1e3e8;
+  font-weight:700;font-size:14px
+}
+.tab-btn.active{background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.tab{display:none}
+.tab.active{display:block}
+
+.box{background:#fff;border-radius:14px;padding:12px;margin-bottom:12px}
+.title{text-align:center;font-weight:700;margin-bottom:6px}
+.inputs{display:flex;gap:8px;margin-bottom:6px}
+
+input,textarea{
+  width:100%;padding:13px;border:none;border-radius:14px;
+  background:#f1f2f4;text-align:center;font-weight:700;font-size:16px
+}
+textarea{resize:none}
+
+.result{word-break:break-word;font-weight:800;color:#0b7a32}
+.count{font-size:12px;color:#666;text-align:center}
+
+.actions{display:none;gap:8px;margin-top:6px}
+button{flex:1;padding:12px;border:none;border-radius:14px;font-weight:800}
+.copy{background:#1976ff;color:#fff}
+.del{background:#e53935;color:#fff}
+
+#tab2 textarea{min-height:40px;font-size:14px;padding:8px}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="tabs">
+  <div class="tab-btn active" onclick="showTab(0)">CHẠM TỔNG</div>
+  <div class="tab-btn" onclick="showTab(1)">GHÉP TRÙNG</div>
+  <div class="tab-btn" onclick="showTab(2)">DÀN PHỨC HỢP</div>
+  <div class="tab-btn" onclick="showTab(3)">BỘ TỔNG</div>
+</div>
+
+<div id="tab1" class="tab active"></div>
+<div id="tab2" class="tab"></div>
+<div id="tab3" class="tab"></div>
+<div id="tab4" class="tab"></div>
+</div>
+
+<script>
+const MIN=4, MAX=80
+const ALL_NUMS = Array.from({length:100},(_,i)=>i.toString().padStart(2,'0'))
+const KEY='tool_lo12_fix'
+
+/* TAB */
+function showTab(i){
+  document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('active',n===i))
+  document.querySelectorAll('.tab-btn').forEach((b,n)=>b.classList.toggle('active',n===i))
+}
+
+/* SAVE */
+function save(){
+  const d={}
+  document.querySelectorAll('input,textarea').forEach(e=>d[e.id]=e.value)
+
+  // lưu thêm kết quả ghép
+  d.gr = gr.innerText
+  d.gc = gc.innerText
+
+  localStorage.setItem(KEY,JSON.stringify(d))
+}
+function load(){
+  const d=JSON.parse(localStorage.getItem(KEY)||'{}')
+
+  Object.keys(d).forEach(id=>{
+    const e=document.getElementById(id)
+    if(e) e.value=d[id]
+  })
+
+  if(d.gr) gr.innerText = d.gr
+  if(d.gc) gc.innerText = d.gc
+}
+
+/* TOOL */
+const digits=id=>document.getElementById(id).value.replace(/\D/g,'').split('').map(Number)
+const pairs=id=>document.getElementById(id).value.match(/\d{2}/g)||[]
+
+/* ================= TAB 1 – CHẠM TỔNG ================= */
+function gen(ch,tg,dau,duoi){
+  return ALL_NUMS.filter(num=>{
+    const a = +num[0]
+    const b = +num[1]
+
+    if(ch.length && !(ch.includes(a)||ch.includes(b))) return false
+    if(tg.length && !tg.includes((a+b)%10)) return false
+    if(dau.length && !dau.includes(a)) return false
+    if(duoi.length && !duoi.includes(b)) return false
+
+    return true
+  })
+}
+
+function calc1(i){
+  const ch = digits('ch'+i)
+  const tg = digits('to'+i)
+  const add = pairs('add'+i)
+  const sub = pairs('sub'+i)
+  const dau = digits('da'+i)
+  const duoi = digits('du'+i)
+  let r=[]
+
+  if(ch.length || tg.length || dau.length || duoi.length){
+  r = gen(ch,tg,dau,duoi)
+}
+
+  if(!r.length && sub.length){
+    for(let x=0;x<=9;x++)
+      for(let y=0;y<=9;y++)
+        r.push(`${x}${y}`)
+  }
+
+  if(add.length){
+    r = r.length ? r.filter(x=>add.includes(x)) : [...add]
+  }
+
+  if(sub.length){
+    r = r.filter(x=>!sub.includes(x))
+  }
+
+  r=[...new Set(r)].sort()
+  out1(i,r)
+  auto1()
+  save()
+}
+
+function out1(i,a){
+  document.getElementById('r'+i).innerText=a.join(',')
+  document.getElementById('c'+i).innerText=a.length?a.length+' số':''
+  document.querySelector('#b1_'+i+' .actions').style.display=a.length?'flex':'none'
+}
+
+function auto1(){
+  let last=MIN
+  for(let i=1;i<=MAX;i++){
+    if(
+      ch(i)||to(i)||addv(i)||subv(i)
+    ) last=i+1
+  }
+  last=Math.min(MAX,Math.max(MIN,last))
+  for(let i=1;i<=MAX;i++)
+    document.getElementById('b1_'+i).style.display=i<=last?'block':'none'
+}
+const ch=i=>document.getElementById('ch'+i).value
+const to=i=>document.getElementById('to'+i).value
+const addv=i=>document.getElementById('add'+i).value
+const subv=i=>document.getElementById('sub'+i).value
+
+function render1(){
+  let h=''
+  for(let i=1;i<=MAX;i++){
+    h+=`
+    <div class="box" id="b1_${i}">
+      <div class="title">DÀN ${i}</div>
+      <div class="inputs">
+        <input id="ch${i}" placeholder="CHẠM" oninput="calc1(${i})">
+        <input id="to${i}" placeholder="TỔNG" oninput="calc1(${i})">
+      </div>
+<div class="inputs">
+  <input id="da${i}" placeholder="ĐẦU" oninput="calc1(${i})">
+  <input id="du${i}" placeholder="ĐUÔI" oninput="calc1(${i})">
+</div>
+      <div class="inputs">
+        <input id="add${i}" placeholder="THÊM"
+       inputmode="none"
+       autocomplete="off"
+       onpaste="setTimeout(()=>calc1(${i}),0)">
+
+<input id="sub${i}" placeholder="BỎ"
+       inputmode="none"
+       autocomplete="off"
+       onpaste="setTimeout(()=>calc1(${i}),0)">
+      </div>
+      <div class="result" id="r${i}"></div>
+      <div class="count" id="c${i}"></div>
+      <div class="actions">
+        <button class="copy" onclick="navigator.clipboard.writeText(r${i}.innerText)">COPY</button>
+        <button class="del" onclick="['ch','to','add','sub'].forEach(x=>document.getElementById(x+'${i}').value='');calc1(${i})">XOÁ</button>
+      </div>
+    </div>`
+  }
+  tab1.innerHTML=h
+}
+function autoP(){
+  let last=MIN
+  for(let i=1;i<=MAX;i++){
+    if(
+      document.getElementById('pa'+i)?.value ||
+      document.getElementById('pb'+i)?.value ||
+      document.getElementById('pch'+i)?.value ||
+      document.getElementById('pto'+i)?.value ||
+      document.getElementById('pda'+i)?.value ||
+      document.getElementById('pdu'+i)?.value ||
+      document.getElementById('padd'+i)?.value ||
+      document.getElementById('psub'+i)?.value
+    ) last=i+1
+  }
+  last=Math.min(MAX,Math.max(MIN,last))
+  for(let i=1;i<=MAX;i++){
+    let box=document.getElementById('pbox'+i)
+    if(box) box.style.display=i<=last?'block':'none'
+  }
+}
+/* ================= TAB 2 – GHÉP TRÙNG ================= */
+function render2(){
+  let h=''
+  for(let i=1;i<=MAX;i++){
+    h+=`
+    <div class="box" id="gbox${i}">
+      <div class="title">DÀN ${i}</div>
+      <textarea id="g${i}" readonly></textarea>
+      <div class="actions" style="display:flex">
+        <button class="copy" onclick="pasteG(${i})">DÁN</button>
+        <button class="del" onclick="document.getElementById('g${i}').value='';calcG()">XOÁ</button>
+      </div>
+    </div>`
+  }
+  h+=`
+  <div class="box">
+    <div class="title">KẾT QUẢ</div>
+    <div class="result" id="gr"></div>
+    <div class="count" id="gc"></div>
+    <div class="actions" id="gact">
+  <button class="copy" onclick="navigator.clipboard.writeText(gr.innerText)">COPY</button>
+  <button class="copy" onclick="calcUnion()">GHÉP DÀN</button>
+  <button class="del" onclick="clearG()">XOÁ</button>
+</div>
+  </div>`
+  tab2.innerHTML=h
+  autoG()
+}
+
+async function pasteG(i){
+  const t=await navigator.clipboard.readText()
+  document.getElementById('g'+i).value=[...new Set(t.match(/\d{2}/g)||[])].join(',')
+  calcG()
+}
+
+function calcG(){
+  let sets=[]
+  for(let i=1;i<=MAX;i++){
+    const v=document.getElementById('g'+i).value.trim()
+    if(v) sets.push(v.split(','))
+  }
+
+  if(sets.length<2){
+    gr.innerText=''
+    gc.innerText=''
+    gact.style.display='none'
+  }else{
+    let r = sets.reduce((a,b)=>{
+  const setB = new Set(b)
+  return a.filter(x => setB.has(x))
+})
+    r=[...new Set(r)]
+    gr.innerText=r.join(',')
+    gc.innerText=r.length+' số'
+    gact.style.display=r.length?'flex':'none'
+  }
+
+  autoG()
+  save()
+}
+
+function calcUnion(){
+  let all=[]
+  for(let i=1;i<=MAX;i++){
+    const v=document.getElementById('g'+i).value.trim()
+    if(v){
+      all.push(...v.split(','))
+    }
+  }
+
+  let r = Array.from(new Set(all)).filter(Boolean).sort()
+
+  gr.innerText=r.join(',')
+  gc.innerText=r.length ? r.length+' số' : ''
+  gact.style.display=r.length?'flex':'none'
+save()
+}
+
+function autoG(){
+  let last=MIN
+  for(let i=1;i<=MAX;i++){
+    if(document.getElementById('g'+i).value.trim()) last=i+1
+  }
+  last=Math.min(MAX,Math.max(MIN,last))
+  for(let i=1;i<=MAX;i++)
+    document.getElementById('gbox'+i).style.display=i<=last?'block':'none'
+}
+function clearG(){
+  for(let i=1;i<=MAX;i++) document.getElementById('g'+i).value=''
+  gr.innerText='';gc.innerText='';gact.style.display='none'
+}
+
+/* ================= TAB 3 – DÀN PHỨC HỢP ================= */
+function render3(){
+  let h=''
+  for(let i=1;i<=MAX;i++){
+    h+=`
+    <div class="box" id="pbox${i}">
+      <div class="title">DÀN ${i}</div>
+      <div class="inputs">
+        <input id="pa${i}" placeholder="SỐ A" oninput="calcP(${i})">
+        <input id="pb${i}" placeholder="SỐ B" oninput="calcP(${i})">
+      </div>
+      <div class="inputs">
+        <input id="pch${i}" placeholder="CHẠM" oninput="calcP(${i})">
+        <input id="pto${i}" placeholder="TỔNG" oninput="calcP(${i})">
+      </div>
+<div class="inputs">
+  <input id="pda${i}" placeholder="ĐẦU" oninput="calcP(${i})">
+  <input id="pdu${i}" placeholder="ĐUÔI" oninput="calcP(${i})">
+</div>
+
+<div class="inputs">
+  <input id="padd${i}" placeholder="THÊM" oninput="calcP(${i})">
+  <input id="psub${i}" placeholder="BỎ" oninput="calcP(${i})">
+</div>
+      <div class="result" id="pr${i}"></div>
+      <div class="count" id="pc${i}"></div>
+      <div class="actions">
+        <button class="copy" onclick="navigator.clipboard.writeText(pr${i}.innerText)">COPY</button>
+        <button class="del" onclick="['pa','pb','pch','pto'].forEach(x=>document.getElementById(x+'${i}').value='');calcP(${i})">XOÁ</button>
+      </div>
+    </div>`
+  }
+  tab3.innerHTML=h
+  autoP()
+}
+
+function calcP(i){
+
+  const a = digits('pa'+i)
+  const b = digits('pb'+i)
+  const ch = digits('pch'+i)
+  const tg = digits('pto'+i)
+
+  const dau = digits('pda'+i)
+  const duoi = digits('pdu'+i)
+  const add = pairs('padd'+i)
+  const sub = pairs('psub'+i)
+
+  let r = []
+
+  // Nếu có A và B → sinh từ A × B
+  if(a.length && b.length){
+    a.forEach(x=>b.forEach(y=>{
+      r.push(''+x+y)
+      r.push(''+y+x)
+    }))
+  }
+
+  // Nếu không có A,B mà có điều kiện khác → chạy 100 số
+  if(!r.length && (ch.length || tg.length || dau.length || duoi.length)){
+    r = [...ALL_NUMS]
+  }
+
+  // Lọc chạm
+  if(ch.length)
+    r = r.filter(n=>ch.includes(+n[0])||ch.includes(+n[1]))
+
+  // Lọc tổng
+  if(tg.length)
+    r = r.filter(n=>tg.includes((+n[0]+ +n[1])%10))
+
+  // Lọc đầu
+  if(dau.length)
+    r = r.filter(n=>dau.includes(+n[0]))
+
+  // Lọc đuôi
+  if(duoi.length)
+    r = r.filter(n=>duoi.includes(+n[1]))
+
+  // Thêm
+  if(add.length)
+    r = r.length ? r.filter(x=>add.includes(x)) : [...add]
+
+  // Bỏ
+  if(sub.length){
+    if(!r.length) r=[...ALL_NUMS]
+    r = r.filter(x=>!sub.includes(x))
+  }
+
+  r=[...new Set(r)].sort()
+
+  document.getElementById('pr'+i).innerText=r.join(',')
+  document.getElementById('pc'+i).innerText=r.length?r.length+' số':''
+  document.querySelector('#pbox'+i+' .actions').style.display=r.length?'flex':'none'
+
+  autoP()
+  save()
+}
+/* ================= TAB 4 – BỘ TỔNG ================= */
+const bong=n=>(n+5)%10
+
+function render4(){
+  let h=''
+  for(let i=1;i<=MAX;i++){
+    h+=`
+    <div class="box" id="tbox${i}">
+      <div class="title">DÀN ${i}</div>
+
+      <div class="inputs">
+  <input id="tb${i}" placeholder="BỘ" oninput="calcT(${i})">
+</div>
+
+<div class="inputs">
+  <input id="tch${i}" placeholder="CHẠM" oninput="calcT(${i})">
+  <input id="tt${i}" placeholder="TỔNG" oninput="calcT(${i})">
+</div>
+
+<div class="inputs">
+  <input id="tda${i}" placeholder="ĐẦU" oninput="calcT(${i})">
+  <input id="tdu${i}" placeholder="ĐUÔI" oninput="calcT(${i})">
+</div>
+
+<div class="inputs">
+  <input id="tadd${i}" placeholder="THÊM" oninput="calcT(${i})">
+  <input id="tsub${i}" placeholder="BỎ" oninput="calcT(${i})">
+</div>
+
+      <div class="result" id="tr${i}"></div>
+      <div class="count" id="tc${i}"></div>
+
+      <div class="actions">
+        <button class="copy" onclick="navigator.clipboard.writeText(tr${i}.innerText)">COPY</button>
+        <button class="del" onclick="['tb','tt','tch','tadd','tsub'].forEach(x=>document.getElementById(x+'${i}').value='');calcT(${i})">XOÁ</button>
+      </div>
+    </div>`
+  }
+  tab4.innerHTML=h
+  autoT()
+}
+
+function calcT(i){
+
+  const raw = pairs('tb'+i)
+  const tong = digits('tt'+i)
+  const cham = digits('tch'+i)
+  const add = pairs('tadd'+i)
+  const sub = pairs('tsub'+i)
+  const dau  = digits('tda'+i)
+  const duoi = digits('tdu'+i)
+  let r = []
+
+  // Nếu có bộ → sinh từ bộ
+  if(raw.length){
+    raw.forEach(num=>{
+      const a=+num[0], b=+num[1]
+      const ba=bong(a), bb=bong(b)
+      r.push(
+        ''+a+b,''+b+a,
+        ''+a+bb,''+bb+a,
+        ''+ba+b,''+b+ba,
+        ''+ba+bb,''+bb+ba
+      )
+    })
+    r=[...new Set(r)]
+  }
+
+if(!raw.length && (tong.length || cham.length || dau.length || duoi.length)){
+  r=[...ALL_NUMS]
+}
+
+  // Lọc tổng
+  if(tong.length){
+    r=r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
+  }
+
+  // Lọc chạm
+  if(cham.length){
+    r=r.filter(n=>cham.includes(+n[0])||cham.includes(+n[1]))
+  }
+// Lọc đầu
+if(dau.length){
+  r = r.filter(n => dau.includes(+n[0]))
+}
+
+// Lọc đuôi
+if(duoi.length){
+  r = r.filter(n => duoi.includes(+n[1]))
+}
+  // Thêm
+  if(add.length){
+    r = r.length ? r.filter(x=>add.includes(x)) : [...add]
+  }
+
+  // Bỏ
+  if(sub.length){
+    if(!r.length) r=[...ALL_NUMS]
+    r=r.filter(x=>!sub.includes(x))
+  }
+
+  r=[...new Set(r)].sort()
+
+  document.getElementById('tr'+i).innerText=r.join(',')
+  document.getElementById('tc'+i).innerText=r.length?r.length+' số':''
+  document.querySelector('#tbox'+i+' .actions').style.display=r.length?'flex':'none'
+
+  autoT()
+  save()
+}
+
+function autoT(){
+  let last=MIN
+  for(let i=1;i<=MAX;i++){
+    if(
+      document.getElementById('tb'+i).value ||
+      document.getElementById('tch'+i).value ||
+      document.getElementById('tadd'+i).value ||
+      document.getElementById('tsub'+i).value
+    ) last=i+1
+  }
+  last=Math.min(MAX,Math.max(MIN,last))
+  for(let i=1;i<=MAX;i++)
+    document.getElementById('tbox'+i).style.display=i<=last?'block':'none'
+}
+/* INIT */
+render1();
+render2();
+render3();
+render4();
+load();
+
+for(let i=1;i<=MAX;i++){
+  calc1(i);
+}
+
+for(let i=1;i<=MAX;i++){
+  if(document.getElementById('pa'+i)) calcP(i);
+}
+for(let i=1;i<=MAX;i++){
+  if(document.getElementById('tb'+i)) calcT(i);
+}
+autoG(); // thêm dòng này
+
+// Sau khi load xong dữ liệu g1..g80
+// nếu có >=2 dàn thì tự ghép lại
+let count=0
+for(let i=1;i<=MAX;i++){
+  if(document.getElementById('g'+i).value.trim()) count++
+}
+
+if(count>=2){
+  calcUnion()
+}else{
+  calcG()
+}
+for(let i=1;i<=MAX;i++){
+  ['add','sub'].forEach(type=>{
+    const el = document.getElementById(type+i)
+    if(!el) return
+
+    el.addEventListener('paste',()=>{
+      setTimeout(()=>{
+        let v = el.value.trim()
+        if(v && !v.endsWith(',')){
+          el.value = v + ','
+        }
+        calc1(i)
+      },0)
+    })
+  })
+}
+
+/* SWIPE TAB */
+let sx=0,sy=0
+document.addEventListener('touchstart',e=>{
+  sx=e.touches[0].clientX; sy=e.touches[0].clientY
+},{passive:true})
+document.addEventListener('touchend',e=>{
+  let dx=e.changedTouches[0].clientX-sx
+  let dy=e.changedTouches[0].clientY-sy
+  if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)){
+    let i=[...document.querySelectorAll('.tab')].findIndex(t=>t.classList.contains('active'))
+    if(dx<0&&i<3) showTab(i+1)
+    if(dx>0&&i>0) showTab(i-1)
+  }
+},{passive:true})
+</script>
+</body>
+</html>

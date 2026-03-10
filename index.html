@@ -11,124 +11,222 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
 <style>
-.tab-title{
+.title{
+  color:#7dd3fc;
+  font-weight:700;
   text-align:center;
-  font-weight:900;
-  font-size:20px;
-  padding:12px 0;
-  color:#00ffee;
-  letter-spacing:1.5px;
-  text-shadow:0 0 8px #00ffee88;
+  margin:10px 0;
 }
-*{
-  box-sizing: border-box;
-}
+
 body{
-  margin:0;
-  background:linear-gradient(180deg,#000c12,#001f2b);
-  color:#00ffee;
+  background:#0b141a;
+  color:#e6edf3;
+  font-family:sans-serif;
 }
+
+/* tabs */
 
 .tabs{
   display:flex;
   gap:8px;
   margin-bottom:10px;
   overflow-x:auto;
-  -webkit-overflow-scrolling:touch;
 }
+
 .tab-btn{
   flex:1;
-  height:6px;
-  border-radius:6px;
-  background:#e1e3e8;
+  padding:12px 4px;
+  text-align:center;
+  border-radius:10px;
+  background:#1b2a32;
+  font-weight:700;
+  font-size:15px;
+  color:#cfe6ee;
 }
 
 .tab-btn.active{
-  background:#00ffee;
-  box-shadow:0 0 8px #00ffee88;
+  background:#144d57;
+  color:#fff;
 }
-.tab-btn.active{background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+
 .tab{display:none}
 .tab.active{display:block}
 
+/* box */
+
 .box{
-  background:#001f2b;
-  border:1px solid #00ffee22;
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:12px;
+  background:#111b21;
+  border:1px solid #22343c;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:14px;
 }
-.title{text-align:center;font-weight:700;margin-bottom:6px}
-.inputs{display:flex;gap:8px;margin-bottom:6px}
-.inputs input{
-  background:#002633;
-  border:1px solid #00ffee55;
-  color:#00ffee;
-  padding:10px;
-  border-radius:8px;
+
+/* inputs layout */
+
+.inputs{
+  display:flex;
+  gap:8px;
+  margin-bottom:8px;
 }
+
+/* input + textarea */
+
 input,textarea{
-  width:100%;padding:13px;border:none;border-radius:14px;
-  background:#f1f2f4;text-align:center;font-weight:700;font-size:16px
+  width:100%;
+  height:52px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid #2a3f47;
+  background:#0b141a;
+  color:#e6edf3;
+  font-size:17px;
+  font-weight:700;
+  text-align:center;
+  box-sizing:border-box;
 }
-textarea{resize:none}
 
-.result{word-break:break-word;font-weight:800;color:#0b7a32}
-.count{font-size:12px;color:#666;text-align:center}
+textarea{
+  height:58px;
+  resize:none;
+}
 
-.actions{display:none;gap:8px;margin-top:6px}
-button{flex:1;padding:12px;border:none;border-radius:14px;font-weight:800}
-.copy{background:#1976ff;color:#fff}
-.del{background:#e53935;color:#fff}
+/* result */
 
-#tab2 textarea{min-height:40px;font-size:14px;padding:8px}
-.container{
-  background:transparent;
+.result{
+  word-break:break-word;
+  font-weight:800;
+  color:#22c55e;
+  margin-top:6px;
+}
+
+.count{
+  font-size:13px;
+  color:#8fa6ad;
+  text-align:center;
+}
+
+/* buttons */
+
+.actions{
+  display:none;
+  gap:8px;
+  margin-top:8px;
+}
+
+button{
+  flex:1;
+  height:48px;
+  border:none;
+  border-radius:12px;
+  font-weight:700;
+  font-size:15px;
+}
+
+.copy{
+  background:#1f8a99;
+  color:#fff;
+}
+
+.del{
+  background:#7a2e2e;
+  color:#fff;
+}
+
+/* tab2 textarea */
+
+#tab2 textarea{
+  min-height:52px;
+  font-size:15px;
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
-<div id="tabTitle" class="tab-title">CHẠM TỔNG</div>
-<div id="tab1" class="tab active"></div>
-<div id="tab2" class="tab"></div>
-<div id="tab3" class="tab"></div>
-<div id="tab4" class="tab"></div>
-<div id="tab5" class="tab"></div>
+
+<div id="tab1" class="tab active">
+<div class="title">CHẠM TỔNG</div>
 </div>
 
+<div id="tab2" class="tab">
+<div class="title">GHÉP TRÙNG</div>
+</div>
+
+<div id="tab3" class="tab">
+<div class="title">DÀN PHỨC HỢP</div>
+</div>
+
+<div id="tab4" class="tab">
+<div class="title">BỘ TỔNG</div>
+</div>
+
+<div id="tab5" class="tab">
+<div class="title">CHÉM DÀN</div>
+</div>
+
+<div id="tab6" class="tab">
+
+<div class="title">GHÉP CHẠM TỔNG</div>
+
+<div class="box">
+
+<input id="ghep_dan" placeholder="Nhập dàn số (vd: 12,34,56)">
+
+<div style="display:flex;gap:8px;margin-top:8px">
+  <input id="ghep_cham" placeholder="Chạm">
+  <input id="ghep_tong" placeholder="Tổng">
+</div>
+
+<div style="display:flex;gap:8px;margin-top:8px">
+  <input placeholder="Bộ">
+  <input placeholder="Đầu">
+  <input placeholder="Đuôi">
+</div>
+
+<div style="display:flex;gap:8px;margin-top:8px">
+  <input placeholder="Thêm">
+  <input placeholder="Bỏ">
+</div>
+
+<div style="display:flex;gap:8px;margin-top:10px">
+  <button>CHẠM</button>
+  <button>GHÉP TỔNG</button>
+</div>
+
+<div style="display:flex;gap:8px;margin-top:8px">
+  <button>GHÉP TRONG</button>
+  <button>GHÉP NGOÀI</button>
+</div>
+
+<textarea placeholder="Kết quả" style="margin-top:8px"></textarea>
+
+</div>
+
+</div>
 <script>
-const MIN=4, MAX=80
+const MIN=4, MAX=40
 const ALL_NUMS = Array.from({length:100},(_,i)=>i.toString().padStart(2,'0'))
-const KEY='tool_lo12_fix'
+const KEY='tool_lo1256_fix'
 
 /* TAB */
 function showTab(i){
-
-  document.querySelectorAll('.tab')
-    .forEach((t,n)=>t.classList.toggle('active',n===i));
-
-  document.querySelectorAll('.tab-btn')
-    .forEach((b,n)=>b.classList.toggle('active',n===i));
-
-  const titles = [
-    "CHẠM TỔNG",
-    "GHÉP TRÙNG",
-    "DÀN PHỨC HỢP",
-    "BỘ TỔNG",
-    "CHÉM DÀN"
-  ];
-
-  document.getElementById("tabTitle").innerText = titles[i] || "";
+save();  document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('active',n===i))
+  document.querySelectorAll('.tab-btn').forEach((b,n)=>b.classList.toggle('active',n===i))
 }
+
 /* SAVE */
 function save(){
   const d={}
-  document.querySelectorAll('input,textarea').forEach(e=>d[e.id]=e.value)
+  document.querySelectorAll('input,textarea').forEach(e=>{
+  if(e.id) d[e.id]=e.value
+})
 
   d.gr = document.getElementById('gr')?.innerText || ''
 d.gc = document.getElementById('gc')?.innerText || ''
+d.ghep_kq = document.getElementById('ghep_kq')?.value || ''
+d.ghep_count = document.getElementById('ghep_count')?.innerText || ''
 d.random_result = document.getElementById('random_result')?.innerText || '';
 d.random_count_text = document.getElementById('random_count_text')?.innerText || '';
   d.chem_result = document.getElementById('chem_result')?.innerText || ''
@@ -148,7 +246,13 @@ function load(){
       e.value = d[id]
     }
   })
-
+if(d.ghep_kq){
+  document.getElementById('ghep_kq').value = d.ghep_kq
+  document.getElementById('ghep_count').innerText = d.ghep_count || ''
+  document.getElementById('ghep_actions').style.display = 'flex'
+}else{
+  document.getElementById('ghep_actions').style.display = 'none'
+}
   /* ===== TAB 2 – GHÉP TRÙNG ===== */
   if(d.gr){
     document.getElementById('gr').innerText = d.gr
@@ -183,8 +287,19 @@ function load(){
   }
 }
 /* TOOL */
-const digits=id=>document.getElementById(id).value.replace(/\D/g,'').split('').map(Number)
-const pairs=id=>document.getElementById(id).value.match(/\d{2}/g)||[]
+const digits=id=>{
+  const el=document.getElementById(id)
+  if(!el) return []
+  return (el.value||'')
+    .replace(/\D/g,'')
+    .split('')
+    .map(Number)
+}
+const pairs=id=>{
+  const el=document.getElementById(id)
+  if(!el) return []
+  return (el.value.match(/\d{2}/g)||[])
+}
 
 /* ================= TAB 1 – CHẠM TỔNG ================= */
 function gen(ch,tg,dau,duoi){
@@ -241,69 +356,61 @@ function out1(i,a){
 }
 
 function auto1(){
-  let last=MIN
+  let last = MIN; // MIN đã khai báo là 4 ở đầu file
 
-  for(let i=1;i<=MAX;i++){
+  for(let i=1; i<=MAX; i++){
+    // Kiểm tra xem dàn i có bất kỳ ô input nào có dữ liệu không
+    const hasValue = 
+      (document.getElementById('ch'+i)?.value || "") ||
+      (document.getElementById('to'+i)?.value || "") ||
+      (document.getElementById('da'+i)?.value || "") ||
+      (document.getElementById('du'+i)?.value || "") ||
+      (document.getElementById('add'+i)?.value || "") ||
+      (document.getElementById('sub'+i)?.value || "");
 
-    const hasValue =
-      ch(i) ||
-      to(i) ||
-      document.getElementById('da'+i)?.value ||
-      document.getElementById('du'+i)?.value ||
-      addv(i) ||
-      subv(i)
-
-    if(hasValue) last=i+1
+    if(hasValue) last = i + 1; // Nếu dàn i có chữ, tự động chuẩn bị hiện dàn i+1
   }
 
-  last=Math.min(MAX,Math.max(MIN,last))
+  // Giới hạn không vượt quá MAX (40)
+  last = Math.min(MAX, Math.max(MIN, last));
 
-  for(let i=1;i<=MAX;i++)
-    document.getElementById('b1_'+i).style.display=i<=last?'block':'none'
+  for(let i=1; i<=MAX; i++){
+    const box = document.getElementById('b1_'+i);
+    if(box) box.style.display = i <= last ? 'block' : 'none';
+  }
 }
-const ch=i=>document.getElementById('ch'+i).value
-const to=i=>document.getElementById('to'+i).value
-const addv=i=>document.getElementById('add'+i).value
-const subv=i=>document.getElementById('sub'+i).value
 
 function render1(){
-  let h=''
-  for(let i=1;i<=MIN;i++){
+  let h='<div class="title">CHẠM TỔNG</div>';
+  for(let i=1; i<=MAX; i++){
+    // Chỉ hiện (block) nếu i <= 4, còn lại ẩn (none)
+    let displayStyle = i <= MIN ? 'block' : 'none'; 
     h+=`
-    <div class="box" id="b1_${i}">
+    <div class="box" id="b1_${i}" style="display:${displayStyle}">
       <div class="title">DÀN ${i}</div>
       <div class="inputs">
         <input id="ch${i}" placeholder="CHẠM" oninput="calc1(${i})">
         <input id="to${i}" placeholder="TỔNG" oninput="calc1(${i})">
       </div>
-<div class="inputs">
-  <input id="da${i}" placeholder="ĐẦU" oninput="calc1(${i})">
-  <input id="du${i}" placeholder="ĐUÔI" oninput="calc1(${i})">
-</div>
       <div class="inputs">
-        <input id="add${i}" placeholder="THÊM"
-       inputmode="none"
-       autocomplete="off"
-       onpaste="setTimeout(()=>calc1(${i}),0)">
-
-<input id="sub${i}" placeholder="BỎ"
-       inputmode="none"
-       autocomplete="off"
-       onpaste="setTimeout(()=>calc1(${i}),0)">
+        <input id="da${i}" placeholder="ĐẦU" oninput="calc1(${i})">
+        <input id="du${i}" placeholder="ĐUÔI" oninput="calc1(${i})">
+      </div>
+      <div class="inputs">
+        <input id="add${i}" placeholder="THÊM" onpaste="setTimeout(()=>calc1(${i}),0)" oninput="calc1(${i})">
+        <input id="sub${i}" placeholder="BỎ" onpaste="setTimeout(()=>calc1(${i}),0)" oninput="calc1(${i})">
       </div>
       <div class="result" id="r${i}"></div>
       <div class="count" id="c${i}"></div>
       <div class="actions">
-        <button class="copy" onclick="navigator.clipboard.writeText(r${i}.innerText)">COPY</button>
-        <button class="del" onclick="['ch','to','da','du','add','sub']
-.forEach(x=>document.getElementById(x+'${i}').value='');calc1(${i})">
-XOÁ
-</button>
+        <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('r${i}').innerText)">COPY</button>
+        <button class="del" onclick="['ch','to','da','du','add','sub'].forEach(x=>document.getElementById(x+'${i}').value='');calc1(${i})">XOÁ</button>
       </div>
-    </div>`
+    </div>`;
   }
-  tab1.innerHTML=h
+  tab1.innerHTML=h;
 }
+
 function autoP(){
   let last=MIN
   for(let i=1;i<=MAX;i++){
@@ -326,7 +433,7 @@ function autoP(){
 }
 /* ================= TAB 2 – GHÉP TRÙNG ================= */
 function render2(){
-  let h=''
+  let h='<div class="title">GHÉP TRÙNG</div>'
   for(let i=1;i<=MAX;i++){
     h+=`
     <div class="box" id="gbox${i}">
@@ -438,13 +545,36 @@ function autoG(){
     document.getElementById('gbox'+i).style.display=i<=last?'block':'none'
 }
 function clearG(){
-  for(let i=1;i<=MAX;i++) 
-    document.getElementById('g'+i).value=''
 
-  document.getElementById('gr').innerText = ''
-  document.getElementById('gc').innerText = ''
-  document.getElementById('gact').style.display = 'none'
-  document.getElementById('diffButtons').innerHTML = ''  // thêm dòng này
+  for(let i=1;i<=MAX;i++){
+    const el = document.getElementById('g'+i)
+    if(el) el.value=''
+  }
+
+  const ids=[
+    'ghep_input',
+    'ghep_kq',
+    'ghep_cham',
+    'ghep_tong',
+    'ghep_dau',
+    'ghep_duoi',
+    'ghep_bo',
+    'ghep_them',
+    'ghep_boSo'
+  ]
+
+  ids.forEach(id=>{
+    const el=document.getElementById(id)
+    if(el) el.value=''
+  })
+
+  document.getElementById('gr').innerText=''
+  document.getElementById('gc').innerText=''
+
+  const act=document.getElementById('gact')
+  if(act) act.style.display='none'
+
+  document.getElementById('diffButtons').innerHTML=''
 
   save()
 }
@@ -513,7 +643,7 @@ function diffPair(a,b){
 }
 /* ================= TAB 3 – DÀN PHỨC HỢP ================= */
 function render3(){
-  let h=''
+  let h='<div class="title">DÀN PHỨC HỢP</div>'
   for(let i=1;i<=MAX;i++){
     h+=`
     <div class="box" id="pbox${i}">
@@ -613,7 +743,7 @@ function calcP(i){
 const bong=n=>(n+5)%10
 
 function render4(){
-  let h=''
+  let h='<div class="title">BỘ TỔNG</div>'
   for(let i=1;i<=MAX;i++){
     h+=`
     <div class="box" id="tbox${i}">
@@ -806,12 +936,288 @@ function render5(){
     </div>
   </div>`;
 }
-function getChemDan(){
-  const raw = document.getElementById('chem_input').value;
-  const arr = raw.match(/\d{2}/g) || [];
+function render6(){
 
-  // giữ nguyên thứ tự nhập, chỉ bỏ trùng
-  return arr.filter((v,i)=>arr.indexOf(v)===i);
+  const tab6 = document.querySelectorAll('.tab')[5]
+
+  tab6.innerHTML = `
+  <div class="box">
+
+  <div class="title">GHÉP CHẠM TỔNG</div>
+
+ <input id="ghep_input" placeholder="Nhập số hoặc dàn" oninput="autoFilter();save()">
+  <div class="inputs" style="margin-top:8px">
+    <input id="ghep_cham" placeholder="Chạm" oninput="autoFilter()">
+    <input id="ghep_tong" placeholder="Tổng" oninput="autoFilter()">
+  </div>
+
+  <div class="inputs">
+    <input id="ghep_bo" placeholder="Bộ" oninput="autoFilter()">
+    <input id="ghep_dau" placeholder="Đầu" oninput="autoFilter()">
+    <input id="ghep_duoi" placeholder="Đuôi" oninput="autoFilter()">
+  </div>
+
+  <div class="inputs">
+    <input id="ghep_them" placeholder="Thêm" oninput="autoFilter()">
+    <input id="ghep_boSo" placeholder="Bỏ" oninput="autoFilter()">
+  </div>
+
+  <div style="display:flex;gap:6px;margin-top:8px">
+
+    <button onclick="runChamTong()">Chạm ghép tổng</button>
+    <button onclick="runTrong()">Chạm ghép trong</button>
+    <button onclick="runNgoai()">Chạm ghép ngoài</button>
+
+  </div>
+
+  <textarea id="ghep_kq" placeholder="Kết quả sẽ hiện ở đây"></textarea>
+
+  <div id="ghep_count" class="count"></div>
+
+  <div class="actions" id="ghep_actions" style="display:none">
+
+    <button class="copy"
+  onclick="navigator.clipboard.writeText(document.getElementById('ghep_kq').value)">
+  COPY
+</button>
+
+<button class="del"
+onclick="
+document.getElementById('ghep_input').value='';
+document.getElementById('ghep_cham').value='';
+document.getElementById('ghep_tong').value='';
+document.getElementById('ghep_bo').value='';
+document.getElementById('ghep_dau').value='';
+document.getElementById('ghep_duoi').value='';
+document.getElementById('ghep_them').value='';
+document.getElementById('ghep_boSo').value='';
+document.getElementById('ghep_kq').value='';
+document.getElementById('ghep_count').innerText='';
+document.getElementById('ghep_actions').style.display='none';
+save();
+">
+XOÁ
+</button>
+
+  </div>
+
+  </div>
+  `
+setTimeout(()=>{
+  const kq = document.getElementById('ghep_kq').value
+  if(!kq) autoFilter()
+},50)
+}
+function getCham(){
+  const raw = document.getElementById('ghep_input').value
+  if(!raw) return []
+  return raw.replace(/\D/g,'').split('').map(Number)
+}
+function runChamTong(){
+
+  const cham = getCham()
+
+  if(!cham.length){
+    return
+  }
+
+  let r = ALL_NUMS.filter(n => {
+
+    const a = +n[0]
+    const b = +n[1]
+    const tong = (a+b)%10
+
+    return (
+      cham.includes(a) ||
+      cham.includes(b) ||
+      cham.includes(tong)
+    )
+
+  })
+
+  applyFilter(r)
+}
+function runTrong(){
+
+  const cham = getCham()
+
+  let r = ALL_NUMS.filter(n=>{
+    const a = +n[0]
+    const b = +n[1]
+    return cham.includes(a) && cham.includes(b)
+  })
+
+  applyFilter(r)
+}
+
+function runNgoai(){
+
+  const cham = getCham()
+
+  let r = ALL_NUMS.filter(n=>{
+    const a = +n[0]
+    const b = +n[1]
+
+    return (cham.includes(a) || cham.includes(b)) &&
+           !(cham.includes(a) && cham.includes(b))
+  })
+
+  applyFilter(r)
+}
+
+function applyFilter(base=[]){
+
+  let r = [...base]
+
+  const cham = digits('ghep_cham')
+  const tong = digits('ghep_tong')
+  const dau  = digits('ghep_dau')
+  const duoi = digits('ghep_duoi')
+  const bo   = pairs('ghep_bo')
+  const them = pairs('ghep_them')
+  const boSo = pairs('ghep_boSo')
+
+  if(cham.length)
+    r=r.filter(n=>cham.includes(+n[0])||cham.includes(+n[1]))
+
+  if(tong.length)
+    r=r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
+
+  if(dau.length)
+    r=r.filter(n=>dau.includes(+n[0]))
+
+  if(duoi.length)
+    r=r.filter(n=>duoi.includes(+n[1]))
+
+  if(bo.length)
+    r=r.filter(n=>bo.includes(n))
+
+  if(boSo.length){
+  r = r.filter(x=>!boSo.includes(x))
+}
+
+  if(them.length){
+  r=[...new Set([...r,...them])]
+}
+    r=[...new Set([...r,...them])]
+
+  r=[...new Set(r)].sort((a,b)=>a-b)
+
+  showKQ(r)
+}
+function autoFilter(){
+
+  const base = pairs('ghep_input')
+if(!base.length) return
+let r = []
+
+if(base.length == 1){      // ví dụ nhập 49
+  const a = +base[0][0]
+  const b = +base[0][1]
+
+  ALL_NUMS.forEach(n=>{
+    const x = +n[0]
+    const y = +n[1]
+
+    if(
+      x==a || y==a ||
+      x==b || y==b ||
+      (x+y)%10==a ||
+      (x+y)%10==b
+    ){
+      r.push(n)
+    }
+  })
+}
+else{
+  r = [...base]
+}
+
+  const cham = digits('ghep_cham')
+  const tong = digits('ghep_tong')
+  const dau  = digits('ghep_dau')
+  const duoi = digits('ghep_duoi')
+  const bo   = pairs('ghep_bo')
+  const them = pairs('ghep_them')
+  const boSo = pairs('ghep_boSo')
+
+  // nếu tất cả đều trống thì không hiện gì
+  if(
+    !cham.length &&
+    !tong.length &&
+    !dau.length &&
+    !duoi.length &&
+    !bo.length &&
+    !them.length &&
+    !boSo.length
+  ){
+    showKQ([])
+    return
+  }
+
+  if(cham.length)
+r = r.filter(n =>
+  cham.includes(+n[0]) ||
+  cham.includes(+n[1])
+)
+
+  if(tong.length)
+    r = r.filter(n => tong.includes((+n[0] + +n[1]) % 10))
+
+  if(dau.length)
+    r = r.filter(n => dau.includes(+n[0]))
+
+  if(duoi.length)
+    r = r.filter(n => duoi.includes(+n[1]))
+
+  if(bo.length){
+
+  let boNums = []
+
+  bo.forEach(num=>{
+    const a = +num[0]
+    const b = +num[1]
+
+    const ba = bong(a)
+    const bb = bong(b)
+
+    boNums.push(
+      ''+a+b,''+b+a,
+      ''+a+bb,''+bb+a,
+      ''+ba+b,''+b+ba,
+      ''+ba+bb,''+bb+ba
+    )
+  })
+
+  boNums = [...new Set(boNums)]
+
+  r = r.filter(n => boNums.includes(n))
+}
+
+  if(boSo.length)
+    r = r.filter(x => !boSo.includes(x))
+
+  if(them.length){
+  r = [...new Set(them)]
+}
+
+  r = [...new Set(r)].sort((a,b)=>a-b)
+
+  showKQ(r)
+}
+function showKQ(arr){
+
+  arr=[...new Set(arr)].sort()
+
+  document.getElementById('ghep_kq').value = arr.join(',')
+
+  document.getElementById('ghep_count').innerText =
+    arr.length ? arr.length + ' số' : ''
+
+  document.getElementById('ghep_actions').style.display =
+    arr.length ? 'flex' : 'none'
+
+  save()
 }
 function runChem(type){
 
@@ -879,34 +1285,6 @@ function runChem(type){
 
   save()
 }
-function haDan(){
-
-  const base = getChemDan()
-
-  if(base.length < 96){
-    alert('Dàn phải đủ 96 số trở lên')
-    return
-  }
-
-  const levels = [96,86,76,66,56,46,36,26,16,6]
-
-  // random 1 lần duy nhất
-  let shuffled = [...base].sort(() => Math.random() - 0.5)
-
-  let output = ''
-
-  for(let i = 0; i < levels.length; i++){
-
-    let keep = levels[i]
-
-    let subset = shuffled.slice(0, keep)
-
-    output += keep + ' số\n'
-    output += subset.join(',') + '\n\n'
-  }
-
-  document.getElementById('chem_result').innerText = output
-}
 function taoDan(){
 
   const base = getChemDan()
@@ -955,7 +1333,8 @@ render2();
 render3();
 render4();
 render5();
-// load();
+render6();
+load();
 // Nếu Tab 2 có dữ liệu thì tính lại
 let hasG = false
 for(let i=1;i<=MAX;i++){
@@ -978,20 +1357,32 @@ for(let i=1;i<=MAX;i++){
   }
 }
 
-// Tab 3
+// Tab 3 – Dàn phức hợp
 for(let i=1;i<=MAX;i++){
   if(
     document.getElementById('pa'+i)?.value ||
-    document.getElementById('pb'+i)?.value
+    document.getElementById('pb'+i)?.value ||
+    document.getElementById('pch'+i)?.value ||
+    document.getElementById('pto'+i)?.value ||
+    document.getElementById('pda'+i)?.value ||
+    document.getElementById('pdu'+i)?.value ||
+    document.getElementById('padd'+i)?.value ||
+    document.getElementById('psub'+i)?.value
   ){
     calcP(i);
   }
 }
 
-// Tab 4
+// Tab 4 – Bộ tổng
 for(let i=1;i<=MAX;i++){
   if(
-    document.getElementById('tb'+i)?.value
+    document.getElementById('tb'+i)?.value ||
+    document.getElementById('tch'+i)?.value ||
+    document.getElementById('tt'+i)?.value ||
+    document.getElementById('tda'+i)?.value ||
+    document.getElementById('tdu'+i)?.value ||
+    document.getElementById('tadd'+i)?.value ||
+    document.getElementById('tsub'+i)?.value
   ){
     calcT(i);
   }
@@ -1012,7 +1403,6 @@ for(let i=1;i<=MAX;i++){
     })
   })
 }
-
 /* SWIPE TAB */
 let sx=0,sy=0
 document.addEventListener('touchstart',e=>{
@@ -1023,7 +1413,7 @@ document.addEventListener('touchend',e=>{
   let dy=e.changedTouches[0].clientY-sy
   if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)){
     let i=[...document.querySelectorAll('.tab')].findIndex(t=>t.classList.contains('active'))
-    if(dx<0&&i<4) showTab(i+1)
+    if(dx<0&&i<5) showTab(i+1)
     if(dx>0&&i>0) showTab(i-1)
   }
 },{passive:true})

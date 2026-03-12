@@ -1162,7 +1162,31 @@ function applyFilter(base=[]){
   const tong = digits('ghep_tong')
   const dau  = digits('ghep_dau')
   const duoi = digits('ghep_duoi')
-  const bo   = pairs('ghep_bo')
+  const boRaw = pairs('ghep_bo')
+
+let bo = []
+
+if(boRaw.length){
+  boRaw.forEach(num=>{
+    const a = +num[0]
+    const b = +num[1]
+
+    const ba = (a + 5) % 10
+    const bb = (b + 5) % 10
+
+    bo.push(
+      ''+a+b,''+b+a,
+      ''+a+bb,''+bb+a,
+      ''+ba+b,''+b+ba,
+      ''+ba+bb,''+bb+ba
+    )
+  })
+
+  bo = [...new Set(bo)]
+}
+
+if(bo.length)
+  r = r.filter(n => bo.includes(n))
   const them = pairs('ghep_them')
   const boSo = pairs('ghep_boSo')
 
@@ -1199,17 +1223,17 @@ function autoFilter(){
   const tong = digits('ghep_tong')
   const dau  = digits('ghep_dau')
   const duoi = digits('ghep_duoi')
-  const bo   = pairs('ghep_bo')
+  const boRaw = pairs('ghep_bo')
   const them = pairs('ghep_them')
   const boSo = pairs('ghep_boSo')
 
-  // nếu tất cả ô trống → không hiển thị
+  // nếu tất cả đều trống → xoá kết quả
   if(
     !cham.length &&
     !tong.length &&
     !dau.length &&
     !duoi.length &&
-    !bo.length &&
+    !boRaw.length &&
     !them.length &&
     !boSo.length
   ){
@@ -1219,32 +1243,47 @@ function autoFilter(){
 
   let r = [...ALL_NUMS]
 
+  let bo = []
+
+  if(boRaw.length){
+    boRaw.forEach(num=>{
+      const a = +num[0]
+      const b = +num[1]
+
+      const ba = (a+5)%10
+      const bb = (b+5)%10
+
+      bo.push(
+        ''+a+b,''+b+a,
+        ''+a+bb,''+bb+a,
+        ''+ba+b,''+b+ba,
+        ''+ba+bb,''+bb+ba
+      )
+    })
+
+    bo=[...new Set(bo)]
+  }
+
   if(cham.length)
-    r = r.filter(n => cham.includes(+n[0]) || cham.includes(+n[1]))
+    r=r.filter(n=>cham.includes(+n[0])||cham.includes(+n[1]))
 
   if(tong.length)
-    r = r.filter(n => tong.includes((+n[0] + +n[1]) % 10))
+    r=r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
 
   if(dau.length)
-    r = r.filter(n => dau.includes(+n[0]))
+    r=r.filter(n=>dau.includes(+n[0]))
 
   if(duoi.length)
-    r = r.filter(n => duoi.includes(+n[1]))
+    r=r.filter(n=>duoi.includes(+n[1]))
 
   if(bo.length)
-    r = r.filter(n => bo.includes(n))
+    r=r.filter(n=>bo.includes(n))
 
   if(boSo.length)
-    r = r.filter(x => !boSo.includes(x))
+    r=r.filter(x=>!boSo.includes(x))
 
-  // THÊM
-if(them.length){
-  if(!cham.length && !tong.length && !dau.length && !duoi.length && !bo.length){
-    r = [...them]       // chỉ hiện số thêm
-  }else{
-    r = [...new Set([...r, ...them])]
-  }
-}
+  if(them.length)
+    r=[...new Set([...r,...them])]
 
   showKQ(r)
 }
@@ -1277,25 +1316,33 @@ function getChemDan(){
 }
 function runChem(type){
 
-  const base = getChemDan()
-  const sizeInit = base.length
+  document.getElementById('chem_result').innerText = ''
+  document.getElementById('chem_count').innerText = ''
 
-  if(sizeInit < 10){
-    alert('Dàn phải >= 10 số')
+  const base = getChemDan()
+  let sizeInit = base.length
+
+  if(sizeInit < 1){
+    alert('Chưa có dàn')
     return
   }
 
+  // xác định mức bắt đầu theo số lượng
   let startX = Math.floor(sizeInit / 10)
+
+  if(startX > 9) startX = 9
+  if(startX < 0) startX = 0
 
   let output = ''
   let lastCount = 0
 
-  for(let x = 9; x >= 1; x--){
+  for(let x = startX; x >= 0; x--){
 
+    // số giữ chuẩn 96→6
     let keep = 96 - (9 - x) * 10
 
-    if(keep < 1) keep = 1
     if(keep > base.length) keep = base.length
+    if(keep < 1) keep = 1
 
     let r = []
 
@@ -1309,7 +1356,6 @@ function runChem(type){
 
     else if(type === 'hai'){
       let half = Math.floor(keep / 2)
-
       r = [
         ...base.slice(0, half),
         ...base.slice(base.length - (keep - half))
@@ -1328,28 +1374,31 @@ function runChem(type){
   }
 
   document.getElementById('chem_result').innerText = output
-
-  document.getElementById('chem_count').innerText =
-    '0x còn ' + lastCount + ' số'
-
-  document.getElementById('chem_actions').style.display =
-    lastCount ? 'flex' : 'none'
+  document.getElementById('chem_count').innerText = '0x còn ' + lastCount + ' số'
+  document.getElementById('chem_actions').style.display = 'flex'
 
   save()
 }
 function taoDan(){
 
-  const base = getChemDan()
-  const sizeInit = base.length
+  document.getElementById('chem_result').innerText = ''
+  document.getElementById('chem_count').innerText = ''
 
-  if(sizeInit < 10){
-    alert('Dàn phải >= 10 số')
+  const base = getChemDan()
+  let sizeInit = base.length
+
+  if(sizeInit < 1){
+    alert('Chưa có dàn')
     return
   }
 
+  // xác định mức bắt đầu theo số lượng dàn
   let startX = Math.floor(sizeInit / 10)
 
-  // random dàn để chém
+  if(startX > 9) startX = 9
+  if(startX < 0) startX = 0
+
+  // random dàn
   let randomDan = [...base]
 
   for(let i = randomDan.length - 1; i > 0; i--){
@@ -1359,15 +1408,15 @@ function taoDan(){
 
   let output = ''
 
-  for(let x = 9; x >= 1; x--){
+  for(let x = startX; x >= 0; x--){
 
     let keep = 96 - (9 - x) * 10
-    if(keep < 1) keep = 1
+
     if(keep > randomDan.length) keep = randomDan.length
+    if(keep < 1) keep = 1
 
     let r = randomDan.slice(0, keep)
 
-    // sắp xếp để hiển thị đẹp
     let sortedDan = r
       .map(x=>parseInt(x))
       .sort((a,b)=>a-b)
@@ -1378,10 +1427,7 @@ function taoDan(){
   }
 
   document.getElementById('chem_result').innerText = output
-
-  document.getElementById('chem_count').innerText =
-    'Mức cuối: 1 số'
-
+  document.getElementById('chem_count').innerText = '0x còn ' + (randomDan.length < 6 ? randomDan.length : 6) + ' số'
   document.getElementById('chem_actions').style.display = 'flex'
 
   save()

@@ -921,7 +921,7 @@ function render5(){
 
 <div class="title">TẠO DÀN NGẪU NHIÊN</div>
 
-<input id="random_count" type="number" min="1" max="100" placeholder="Nhập số lượng">
+<input id="random_count" type="number" min="1" max="100" placeholder="Nhập số lượng" oninput="checkRandomEmpty()">
 
 <div class="result" id="random_result" style="margin-top:8px"></div>
 <div class="count" id="random_count_text"></div>
@@ -1525,47 +1525,19 @@ document.addEventListener('touchend',e=>{
 function createRandomDan(){
 
   const input = document.getElementById('random_count')
-  let qty = parseInt(input?.value) || 10
+  let qty = parseInt(input.value)
 
-  // tối thiểu 10 số để đảm bảo đủ 10 đầu
-  if(qty < 10) qty = 10
+  if(isNaN(qty) || qty <= 0){
+    alert("Nhập số lượng")
+    return
+  }
+
   if(qty > 100) qty = 100
 
   let nums = []
-// cấu hình số lượng từng đầu
-const dauConfig = {
-  9:10,
-  8:9,
-  7:8,
-  6:7,
-  5:6,
-  4:5,
-  3:4,
-  2:3,
-  1:2,
-  0:1,
-}
 
-for(let d=0; d<=9; d++){
-
-  let need = dauConfig[d] || 0
-
-  while(
-    nums.filter(x=>x.startsWith(d)).length < need
-  ){
-
-    let n = d.toString() + Math.floor(Math.random()*10)
-
-    if(!nums.includes(n)){
-      nums.push(n)
-    }
-
-  }
-
-}
-
-  // BƯỚC 2: thêm số ngẫu nhiên cho đủ qty
   while(nums.length < qty){
+
     let n = Math.floor(Math.random()*100)
       .toString()
       .padStart(2,'0')
@@ -1573,17 +1545,13 @@ for(let d=0; d<=9; d++){
     if(!nums.includes(n)){
       nums.push(n)
     }
+
   }
 
-  // BƯỚC 3: sắp xếp từ bé tới lớn
   nums.sort((a,b)=>parseInt(a)-parseInt(b))
 
-  const dan = nums.join(',')
-
-  document.getElementById('random_result').innerText = dan
+  document.getElementById('random_result').innerText = nums.join(',')
   document.getElementById('random_count_text').innerText = nums.length + ' số'
-
-  // luôn giữ flex để nút không lệch
   document.getElementById('random_actions').style.display = 'flex'
 
   save()
@@ -1603,6 +1571,18 @@ function clearRandom(){
   document.getElementById('random_actions').style.display = 'none'
 
   save()
+}
+function checkRandomEmpty(){
+
+  const v = document.getElementById('random_count').value
+
+  if(v === ''){
+    document.getElementById('random_result').innerText = ''
+    document.getElementById('random_count_text').innerText = ''
+    document.getElementById('random_actions').style.display = 'none'
+    save()
+  }
+
 }
 </script>
 </body>

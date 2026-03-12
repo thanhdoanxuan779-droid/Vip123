@@ -317,6 +317,19 @@ function gen(ch,tg,dau,duoi){
 }
 
 function calc1(i){
+if(
+    !document.getElementById('ch'+i).value &&
+    !document.getElementById('to'+i).value &&
+    !document.getElementById('da'+i).value &&
+    !document.getElementById('du'+i).value &&
+    !document.getElementById('add'+i).value &&
+    !document.getElementById('sub'+i).value
+  ){
+    out1(i,[])
+    auto1()
+    save()
+    return
+  }
   const ch = digits('ch'+i)
   const tg = digits('to'+i)
   const add = pairs('add'+i)
@@ -336,8 +349,8 @@ function calc1(i){
   }
 
   if(add.length){
-    r = r.length ? r.filter(x=>add.includes(x)) : [...add]
-  }
+  r = [...new Set([...r, ...add])]
+}
 
   if(sub.length){
     r = r.filter(x=>!sub.includes(x))
@@ -453,8 +466,9 @@ function render2(){
     <div class="actions" id="gact">
   <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('gr').innerText)">COPY</button>
   <button class="copy" onclick="calcUnion()">GHÉP DÀN</button>
-  <button class="copy" onclick="calcG()">GHÉP TRÙNG</button>
-  <button class="del" onclick="clearG()">XOÁ</button>
+<button class="copy" onclick="calcG()">GHÉP TRÙNG</button>
+<button class="copy" onclick="removeAllDuplicate()">LOẠI TRÙNG</button>
+<button class="del" onclick="clearG()">XOÁ</button>
 </div>
 <div id="diffButtons" style="display:flex;flex-wrap:wrap;margin-top:6px"></div>
   </div>`
@@ -534,7 +548,38 @@ function calcUnion(){
   generateDiffButtons()
   save()
 }
+function removeAllDuplicate(){
 
+  let all = []
+
+  for(let i=1;i<=MAX;i++){
+    const v = document.getElementById('g'+i).value.trim()
+    if(v){
+      all.push(...(v.match(/\d{2}/g) || []))
+    }
+  }
+
+  let count = {}
+
+  all.forEach(n=>{
+    count[n] = (count[n] || 0) + 1
+  })
+
+  let result = Object.keys(count)
+    .filter(n => count[n] === 1)
+    .map(x=>parseInt(x))
+    .sort((a,b)=>a-b)
+    .map(x=>x.toString().padStart(2,'0'))
+
+  document.getElementById('gr').innerText = result.join(',')
+  document.getElementById('gc').innerText =
+    result.length ? result.length + ' số' : '0 số'
+
+  // LUÔN HIỆN NÚT
+  document.getElementById('gact').style.display = 'flex'
+
+  save()
+}
 function autoG(){
   let last=MIN
   for(let i=1;i<=MAX;i++){
@@ -592,30 +637,23 @@ function generateDiffButtons(){
     if(v) filled.push(i)
   }
 
-  if(filled.length < 2){
-    container.innerHTML = ''
-    return
-  }
+  if(filled.length < 2) return
 
-  for(let i=0;i<filled.length;i++){
-    for(let j=i+1;j<filled.length;j++){
+  const a = filled[0]
+  const b = filled[1]
 
-      const a = filled[i]
-      const b = filled[j]
+  const btn1 = document.createElement('button')
+  btn1.className = 'copy'
+  btn1.innerText = `Dàn ${a} loại dàn ${b}`
+  btn1.onclick = ()=> diffPair(a,b)
 
-      const btn1 = document.createElement('button')
-      btn1.className = 'copy'
-      btn1.innerText = `Dàn ${a} loại dàn ${b}`
-      btn1.onclick = ()=> diffPair(a,b)
-      container.appendChild(btn1)
+  const btn2 = document.createElement('button')
+  btn2.className = 'copy'
+  btn2.innerText = `Dàn ${b} loại dàn ${a}`
+  btn2.onclick = ()=> diffPair(b,a)
 
-      const btn2 = document.createElement('button')
-      btn2.className = 'copy'
-      btn2.innerText = `Dàn ${b} loại dàn ${a}`
-      btn2.onclick = ()=> diffPair(b,a)
-      container.appendChild(btn2)
-    }
-  }
+  container.appendChild(btn1)
+  container.appendChild(btn2)
 }
 function getDan(i){
   const v = document.getElementById('g'+i)?.value.trim()
@@ -720,9 +758,8 @@ function calcP(i){
   if(duoi.length)
     r = r.filter(n=>duoi.includes(+n[1]))
 
-  // Thêm
-  if(add.length)
-    r = r.length ? r.filter(x=>add.includes(x)) : [...add]
+ if(add.length)
+  r = [...new Set([...r, ...add])]
 
   // Bỏ
   if(sub.length){
@@ -829,10 +866,9 @@ if(dau.length){
 if(duoi.length){
   r = r.filter(n => duoi.includes(+n[1]))
 }
-  // Thêm
   if(add.length){
-    r = r.length ? r.filter(x=>add.includes(x)) : [...add]
-  }
+  r = [...new Set([...r, ...add])]
+}
 
   // Bỏ
   if(sub.length){
@@ -880,61 +916,92 @@ function render5(){
   const tab5 = document.querySelectorAll('.tab')[4];
 
   tab5.innerHTML = `
-  <div class="box">
-    <div class="title">CHÉM THEO DÀN</div>
-<div class="box" style="margin-top:15px">
-  <div class="title">TẠO DÀN NGẪU NHIÊN</div>
 
-  <input id="random_count" type="number" min="1" max="100" placeholder="Nhập số lượng">
+<div class="box">
+
+<div class="title">TẠO DÀN NGẪU NHIÊN</div>
+
+<input id="random_count" type="number" min="1" max="100" placeholder="Nhập số lượng">
 
 <div class="result" id="random_result" style="margin-top:8px"></div>
 <div class="count" id="random_count_text"></div>
 
 <div style="margin-top:8px">
-  <button class="copy" style="width:100%" onclick="createRandomDan()">TẠO DÀN</button>
+<button class="copy" style="width:100%" onclick="createRandomDan()">TẠO DÀN</button>
 </div>
 
 <div id="random_actions" class="actions" style="display:none;margin-top:8px">
-  <button class="copy" onclick="copyRandom()">COPY</button>
-  <button class="del" onclick="clearRandom()">XOÁ</button>
-</div>
-    <textarea id="chem_input" placeholder="DÀN" oninput="save()"></textarea>
-
-    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
-
-  <div style="display:flex;gap:8px">
-    <button class="copy" onclick="runChem('tren')">CHÉM TRÊN</button>
-    <button class="copy" onclick="runChem('duoi')">CHÉM DƯỚI</button>
-  </div>
-
-  <div style="display:flex;gap:8px">
-    <button class="copy" onclick="runChem('hai')">CHÉM 2 ĐẦU</button>
-    <button class="copy" onclick="runChem('giua')">CHÉM GIỮA</button>
-  </div>
-<button class="copy" onclick="taoDan()">TẠO DÀN</button>
+<button class="copy" onclick="copyRandom()">COPY</button>
+<button class="del" onclick="clearRandom()">XOÁ</button>
 </div>
 
-    <div class="result" id="chem_result"></div>
-    <div class="count" id="chem_count"></div>
+</div>
 
-    <div class="actions" id="chem_actions" style="display:none;margin-top:8px">
-      <button class="copy"
-        onclick="navigator.clipboard.writeText(document.getElementById('chem_result').innerText)">
-        COPY
-      </button>
+<div class="box">
 
-      <button class="del"
-  onclick="
-    document.getElementById('chem_input').value='';
-    document.getElementById('chem_result').innerText='';
-    document.getElementById('chem_count').innerText='';
-    document.getElementById('chem_actions').style.display='none';
-    save();
-  ">
-  XOÁ
+<div class="title">CHÉM THEO DÀN</div>
+
+<textarea id="chem_input" placeholder="DÀN" oninput="save()"></textarea>
+
+<div class="actions" style="display:flex;margin-top:8px">
+
+<button class="copy"
+onclick="navigator.clipboard.readText().then(t=>{
+document.getElementById('chem_input').value=t;
+save();
+})">DÁN</button>
+
+<button class="del"
+onclick="
+document.getElementById('chem_input').value='';
+save();
+">XOÁ</button>
+
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+
+<div style="display:flex;gap:8px">
+<button class="copy" onclick="runChem('tren')">CHÉM TRÊN</button>
+<button class="copy" onclick="runChem('duoi')">CHÉM DƯỚI</button>
+</div>
+
+<div style="display:flex;gap:8px">
+<button class="copy" onclick="runChem('hai')">CHÉM 2 ĐẦU</button>
+<button class="copy" onclick="runChem('giua')">CHÉM GIỮA</button>
+</div>
+
+<div style="display:flex;gap:8px">
+<button class="copy" style="flex:none;width:100%" onclick="taoDan()">TẠO DÀN</button>
+</div>
+
+</div>
+
+<div class="result" id="chem_result"></div>
+<div class="count" id="chem_count"></div>
+
+<div class="actions" id="chem_actions" style="display:none;margin-top:8px">
+
+<button class="copy"
+onclick="navigator.clipboard.writeText(document.getElementById('chem_result').innerText)">
+COPY
 </button>
-    </div>
-  </div>`;
+
+<button class="del"
+onclick="
+document.getElementById('chem_input').value='';
+document.getElementById('chem_result').innerText='';
+document.getElementById('chem_count').innerText='';
+document.getElementById('chem_actions').style.display='none';
+save();
+">
+XOÁ
+</button>
+
+</div>
+
+</div>
+`
 }
 function render6(){
 
@@ -945,7 +1012,7 @@ function render6(){
 
   <div class="title">GHÉP CHẠM TỔNG</div>
 
- <input id="ghep_input" placeholder="Nhập số hoặc dàn" oninput="autoFilter();save()">
+<input id="ghep_input" placeholder="Nhập số hoặc dàn" oninput="updateChamInput()">
   <div class="inputs" style="margin-top:8px">
     <input id="ghep_cham" placeholder="Chạm" oninput="autoFilter()">
     <input id="ghep_tong" placeholder="Tổng" oninput="autoFilter()">
@@ -1015,6 +1082,8 @@ function getCham(){
 }
 function runChamTong(){
 
+  ghepMode = 'tong'
+
   const cham = getCham()
 
   if(!cham.length){
@@ -1037,7 +1106,25 @@ function runChamTong(){
 
   applyFilter(r)
 }
+function updateChamInput(){
+
+  const cham = getCham()
+
+  if(!cham.length){
+    showKQ([])
+    save()
+    return
+  }
+
+  if(ghepMode === 'tong') runChamTong()
+  if(ghepMode === 'trong') runTrong()
+  if(ghepMode === 'ngoai') runNgoai()
+
+  save()
+}
 function runTrong(){
+
+  ghepMode = 'trong'
 
   const cham = getCham()
 
@@ -1051,6 +1138,8 @@ function runTrong(){
 }
 
 function runNgoai(){
+
+  ghepMode = 'ngoai'
 
   const cham = getCham()
 
@@ -1097,41 +1186,14 @@ function applyFilter(base=[]){
 }
 
   if(them.length){
-  r=[...new Set([...r,...them])]
+  r = [...new Set([...r, ...them])]
 }
-    r=[...new Set([...r,...them])]
 
   r=[...new Set(r)].sort((a,b)=>a-b)
 
   showKQ(r)
 }
 function autoFilter(){
-
-  const base = pairs('ghep_input')
-if(!base.length) return
-let r = []
-
-if(base.length == 1){      // ví dụ nhập 49
-  const a = +base[0][0]
-  const b = +base[0][1]
-
-  ALL_NUMS.forEach(n=>{
-    const x = +n[0]
-    const y = +n[1]
-
-    if(
-      x==a || y==a ||
-      x==b || y==b ||
-      (x+y)%10==a ||
-      (x+y)%10==b
-    ){
-      r.push(n)
-    }
-  })
-}
-else{
-  r = [...base]
-}
 
   const cham = digits('ghep_cham')
   const tong = digits('ghep_tong')
@@ -1141,7 +1203,7 @@ else{
   const them = pairs('ghep_them')
   const boSo = pairs('ghep_boSo')
 
-  // nếu tất cả đều trống thì không hiện gì
+  // nếu tất cả ô trống → không hiển thị
   if(
     !cham.length &&
     !tong.length &&
@@ -1155,11 +1217,10 @@ else{
     return
   }
 
+  let r = [...ALL_NUMS]
+
   if(cham.length)
-r = r.filter(n =>
-  cham.includes(+n[0]) ||
-  cham.includes(+n[1])
-)
+    r = r.filter(n => cham.includes(+n[0]) || cham.includes(+n[1]))
 
   if(tong.length)
     r = r.filter(n => tong.includes((+n[0] + +n[1]) % 10))
@@ -1170,44 +1231,26 @@ r = r.filter(n =>
   if(duoi.length)
     r = r.filter(n => duoi.includes(+n[1]))
 
-  if(bo.length){
-
-  let boNums = []
-
-  bo.forEach(num=>{
-    const a = +num[0]
-    const b = +num[1]
-
-    const ba = bong(a)
-    const bb = bong(b)
-
-    boNums.push(
-      ''+a+b,''+b+a,
-      ''+a+bb,''+bb+a,
-      ''+ba+b,''+b+ba,
-      ''+ba+bb,''+bb+ba
-    )
-  })
-
-  boNums = [...new Set(boNums)]
-
-  r = r.filter(n => boNums.includes(n))
-}
+  if(bo.length)
+    r = r.filter(n => bo.includes(n))
 
   if(boSo.length)
     r = r.filter(x => !boSo.includes(x))
 
-  if(them.length){
-  r = [...new Set(them)]
+  // THÊM
+if(them.length){
+  if(!cham.length && !tong.length && !dau.length && !duoi.length && !bo.length){
+    r = [...them]       // chỉ hiện số thêm
+  }else{
+    r = [...new Set([...r, ...them])]
+  }
 }
-
-  r = [...new Set(r)].sort((a,b)=>a-b)
 
   showKQ(r)
 }
 function showKQ(arr){
 
-  arr=[...new Set(arr)].sort()
+  arr=[...new Set(arr)].sort((a,b)=>a-b)
 
   document.getElementById('ghep_kq').value = arr.join(',')
 
@@ -1219,29 +1262,41 @@ function showKQ(arr){
 
   save()
 }
+function getChemDan(){
+
+  const raw = document.getElementById('chem_input').value || ''
+
+  let nums = raw.match(/\d{2}/g) || []
+
+  nums = [...new Set(nums)]
+    .map(x=>parseInt(x))
+    .sort((a,b)=>a-b)
+    .map(x=>x.toString().padStart(2,'0'))
+
+  return nums
+}
 function runChem(type){
 
   const base = getChemDan()
   const sizeInit = base.length
 
-  if(sizeInit < 2){
-    alert('Dàn quá ít số')
+  if(sizeInit < 10){
+    alert('Dàn phải >= 10 số')
     return
   }
+
+  let startX = Math.floor(sizeInit / 10)
 
   let output = ''
   let lastCount = 0
 
-  for(let level = 9; level >= 0; level--){
+  for(let x = 9; x >= 1; x--){
 
-    // 9x=100%, 8x=90% ... 0x=10%
-    let percent = (level + 1) * 10
-    let keep = Math.floor(sizeInit * (percent / 100))
+    let keep = 96 - (9 - x) * 10
 
-    if(keep > sizeInit) keep = sizeInit
     if(keep < 1) keep = 1
+    if(keep > base.length) keep = base.length
 
-    let size = base.length
     let r = []
 
     if(type === 'tren'){
@@ -1249,34 +1304,31 @@ function runChem(type){
     }
 
     else if(type === 'duoi'){
-      r = base.slice(size - keep)
+      r = base.slice(base.length - keep)
     }
 
     else if(type === 'hai'){
       let half = Math.floor(keep / 2)
+
       r = [
         ...base.slice(0, half),
-        ...base.slice(size - (keep - half))
+        ...base.slice(base.length - (keep - half))
       ]
     }
 
     else if(type === 'giua'){
-      let start = Math.floor((size - keep) / 2)
+      let start = Math.floor((base.length - keep) / 2)
       r = base.slice(start, start + keep)
-    }
-
-    else{
-      // nếu không truyền type → mặc định hạ từ đầu
-      r = base.slice(0, keep)
     }
 
     lastCount = r.length
 
-    output += level + 'x (' + r.length + ' số)\n'
+    output += x + 'x (' + r.length + ' số)\n'
     output += r.join(',') + '\n\n'
   }
 
   document.getElementById('chem_result').innerText = output
+
   document.getElementById('chem_count').innerText =
     '0x còn ' + lastCount + ' số'
 
@@ -1295,35 +1347,42 @@ function taoDan(){
     return
   }
 
-  // xác định mốc bắt đầu (60 số -> 6x, 83 số -> 8x)
   let startX = Math.floor(sizeInit / 10)
 
-  // random 1 lần duy nhất
-  let shuffled = [...base].sort(() => Math.random() - 0.5)
+  // random dàn để chém
+  let randomDan = [...base]
+
+  for(let i = randomDan.length - 1; i > 0; i--){
+    let j = Math.floor(Math.random() * (i + 1))
+    ;[randomDan[i], randomDan[j]] = [randomDan[j], randomDan[i]]
+  }
 
   let output = ''
-  let current = shuffled
 
-  for(let x = startX; x >= 0; x--){
+  for(let x = 9; x >= 1; x--){
 
-    let keep = x * 10
-
+    let keep = 96 - (9 - x) * 10
     if(keep < 1) keep = 1
-    if(keep > sizeInit) keep = sizeInit
+    if(keep > randomDan.length) keep = randomDan.length
 
-    current = current.slice(0, keep)
+    let r = randomDan.slice(0, keep)
 
-    output += x + 'x (' + current.length + ' số)\n'
-    output += current.join(',') + '\n\n'
+    // sắp xếp để hiển thị đẹp
+    let sortedDan = r
+      .map(x=>parseInt(x))
+      .sort((a,b)=>a-b)
+      .map(x=>x.toString().padStart(2,'0'))
+
+    output += x + 'x (' + sortedDan.length + ' số)\n'
+    output += sortedDan.join(',') + '\n\n'
   }
 
   document.getElementById('chem_result').innerText = output
 
   document.getElementById('chem_count').innerText =
-    'Mức cuối: ' + current.length + ' số'
+    'Mức cuối: 1 số'
 
-  document.getElementById('chem_actions').style.display =
-    current.length ? 'flex' : 'none'
+  document.getElementById('chem_actions').style.display = 'flex'
 
   save()
 }
@@ -1427,12 +1486,37 @@ function createRandomDan(){
   if(qty > 100) qty = 100
 
   let nums = []
+// cấu hình số lượng từng đầu
+const dauConfig = {
+  9:10,
+  8:9,
+  7:8,
+  6:7,
+  5:6,
+  4:5,
+  3:4,
+  2:3,
+  1:2,
+  0:1,
+}
 
-  // BƯỚC 1: đảm bảo mỗi đầu có ít nhất 1 số
-  for(let d=0; d<=9; d++){
-    let n = d.toString() + Math.floor(Math.random()*10).toString()
-    nums.push(n)
+for(let d=0; d<=9; d++){
+
+  let need = dauConfig[d] || 0
+
+  while(
+    nums.filter(x=>x.startsWith(d)).length < need
+  ){
+
+    let n = d.toString() + Math.floor(Math.random()*10)
+
+    if(!nums.includes(n)){
+      nums.push(n)
+    }
+
   }
+
+}
 
   // BƯỚC 2: thêm số ngẫu nhiên cho đủ qty
   while(nums.length < qty){
@@ -1464,10 +1548,15 @@ function copyRandom(){
 }
 
 function clearRandom(){
-  document.getElementById('random_result').innerText='';
-  document.getElementById('random_count_text').innerText='';
-  document.getElementById('random_actions').style.display='none';
-  save();   // thêm dòng này
+
+  document.getElementById('random_count').value = ''
+
+  document.getElementById('random_result').innerText = ''
+  document.getElementById('random_count_text').innerText = ''
+
+  document.getElementById('random_actions').style.display = 'none'
+
+  save()
 }
 </script>
 </body>

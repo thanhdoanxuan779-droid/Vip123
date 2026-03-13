@@ -298,7 +298,15 @@ const digits=id=>{
 const pairs=id=>{
   const el=document.getElementById(id)
   if(!el) return []
-  return (el.value.match(/\d{2}/g)||[])
+
+  let nums = (el.value.match(/\d{2}/g) || [])
+
+  nums = nums
+    .map(x=>parseInt(x))
+    .filter(x=>x>=0 && x<=99)
+    .map(x=>x.toString().padStart(2,'0'))
+
+  return [...new Set(nums)]
 }
 
 /* ================= TAB 1 – CHẠM TỔNG ================= */
@@ -317,51 +325,70 @@ function gen(ch,tg,dau,duoi){
 }
 
 function calc1(i){
-if(
-    !document.getElementById('ch'+i).value &&
-    !document.getElementById('to'+i).value &&
-    !document.getElementById('da'+i).value &&
-    !document.getElementById('du'+i).value &&
-    !document.getElementById('add'+i).value &&
-    !document.getElementById('sub'+i).value
+
+  const ch   = digits('ch'+i)
+  const tg   = digits('to'+i)
+  const dau  = digits('da'+i)
+  const duoi = digits('du'+i)
+  const add  = pairs('add'+i)
+  const sub  = pairs('sub'+i)
+
+  if(
+    !ch.length &&
+    !tg.length &&
+    !dau.length &&
+    !duoi.length &&
+    !add.length &&
+    !sub.length
   ){
     out1(i,[])
     auto1()
     save()
     return
   }
-  const ch = digits('ch'+i)
-  const tg = digits('to'+i)
-  const add = pairs('add'+i)
-  const sub = pairs('sub'+i)
-  const dau = digits('da'+i)
-  const duoi = digits('du'+i)
-  let r=[]
 
+  let r = add.length ? [...add] : [...ALL_NUMS]
+
+  /* xác định dàn ban đầu */
   if(ch.length || tg.length || dau.length || duoi.length){
-  r = gen(ch,tg,dau,duoi)
-}
 
-  if(!r.length && sub.length){
-    for(let x=0;x<=9;x++)
-      for(let y=0;y<=9;y++)
-        r.push(`${x}${y}`)
+    r = ALL_NUMS.filter(n=>{
+      const a = +n[0]
+      const b = +n[1]
+
+      if(ch.length && !(ch.includes(a) || ch.includes(b))) return false
+      if(tg.length && !tg.includes((a+b)%10)) return false
+      if(dau.length && !dau.includes(a)) return false
+      if(duoi.length && !duoi.includes(b)) return false
+
+      return true
+    })
+
+  }else if(add.length){
+
+    r = [...new Set(add)]
+
   }
 
-  if(add.length){
-  r = [...new Set([...r, ...add])]
+if(add.length){
+  r = r.filter(x => add.includes(x))
+}
+if(sub.length){
+
+  if(!r.length) r = [...ALL_NUMS]
+
+  r = r.filter(x=>!sub.includes(x))
+
 }
 
-  if(sub.length){
-    r = r.filter(x=>!sub.includes(x))
-  }
+  /* sort */
+  r = [...new Set(r)]
+    .sort((a,b)=>parseInt(a)-parseInt(b))
 
-  r=[...new Set(r)].sort()
   out1(i,r)
   auto1()
   save()
 }
-
 function out1(i,a){
   document.getElementById('r'+i).innerText=a.join(',')
   document.getElementById('c'+i).innerText=a.length?a.length+' số':''
@@ -369,30 +396,35 @@ function out1(i,a){
 }
 
 function auto1(){
-  let last = MIN; // MIN đã khai báo là 4 ở đầu file
 
-  for(let i=1; i<=MAX; i++){
-    // Kiểm tra xem dàn i có bất kỳ ô input nào có dữ liệu không
-    const hasValue = 
-      (document.getElementById('ch'+i)?.value || "") ||
-      (document.getElementById('to'+i)?.value || "") ||
-      (document.getElementById('da'+i)?.value || "") ||
-      (document.getElementById('du'+i)?.value || "") ||
-      (document.getElementById('add'+i)?.value || "") ||
-      (document.getElementById('sub'+i)?.value || "");
+  let last = MIN;
 
-    if(hasValue) last = i + 1; // Nếu dàn i có chữ, tự động chuẩn bị hiện dàn i+1
+  for(let i=1;i<=MAX;i++){
+
+    const ch  = document.getElementById('ch'+i)?.value.trim()
+    const to  = document.getElementById('to'+i)?.value.trim()
+    const da  = document.getElementById('da'+i)?.value.trim()
+    const du  = document.getElementById('du'+i)?.value.trim()
+    const add = document.getElementById('add'+i)?.value.trim()
+    const sub = document.getElementById('sub'+i)?.value.trim()
+
+    if(ch || to || da || du || add || sub){
+      last = i
+    }
+
   }
 
-  // Giới hạn không vượt quá MAX (40)
-  last = Math.min(MAX, Math.max(MIN, last));
+  last = Math.min(MAX, last + 1)
+  last = Math.max(MIN, last)
 
-  for(let i=1; i<=MAX; i++){
-    const box = document.getElementById('b1_'+i);
-    if(box) box.style.display = i <= last ? 'block' : 'none';
+  for(let i=1;i<=MAX;i++){
+    const box = document.getElementById('b1_'+i)
+    if(box){
+      box.style.display = i <= last ? 'block' : 'none'
+    }
   }
+
 }
-
 function render1(){
   let h='<div class="title">CHẠM TỔNG</div>';
   for(let i=1; i<=MAX; i++){
@@ -727,7 +759,7 @@ function calcP(i){
   const add = pairs('padd'+i)
   const sub = pairs('psub'+i)
 
-  let r = []
+  let r = add.length ? [...add] : [...ALL_NUMS]
 
   // Nếu có A và B → sinh từ A × B
   if(a.length && b.length){
@@ -758,14 +790,16 @@ function calcP(i){
   if(duoi.length)
     r = r.filter(n=>duoi.includes(+n[1]))
 
- if(add.length)
-  r = [...new Set([...r, ...add])]
-
-  // Bỏ
+if(add.length){
+  r = r.filter(x => add.includes(x))
+}
   if(sub.length){
-    if(!r.length) r=[...ALL_NUMS]
-    r = r.filter(x=>!sub.includes(x))
-  }
+
+  if(!r.length) r = [...ALL_NUMS]
+
+  r = r.filter(x=>!sub.includes(x))
+
+}
 
   r=[...new Set(r)].sort()
 
@@ -827,13 +861,16 @@ function calcT(i){
   const sub = pairs('tsub'+i)
   const dau  = digits('tda'+i)
   const duoi = digits('tdu'+i)
-  let r = []
+
+  let r = add.length ? [...add] : []
 
   // Nếu có bộ → sinh từ bộ
   if(raw.length){
+    r = []
     raw.forEach(num=>{
-      const a=+num[0], b=+num[1]
-      const ba=bong(a), bb=bong(b)
+      const a = +num[0], b = +num[1]
+      const ba = bong(a), bb = bong(b)
+
       r.push(
         ''+a+b,''+b+a,
         ''+a+bb,''+bb+a,
@@ -841,51 +878,57 @@ function calcT(i){
         ''+ba+bb,''+bb+ba
       )
     })
-    r=[...new Set(r)]
+    r = [...new Set(r)]
   }
 
-if(!raw.length && (tong.length || cham.length || dau.length || duoi.length)){
-  r=[...ALL_NUMS]
-}
+  // Nếu không có bộ nhưng có điều kiện → chạy 100 số
+  if(!raw.length && (tong.length || cham.length || dau.length || duoi.length)){
+    r = [...ALL_NUMS]
+  }
 
   // Lọc tổng
   if(tong.length){
-    r=r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
+    r = r.filter(n => tong.includes((+n[0] + +n[1]) % 10))
   }
 
   // Lọc chạm
   if(cham.length){
-    r=r.filter(n=>cham.includes(+n[0])||cham.includes(+n[1]))
+    r = r.filter(n => cham.includes(+n[0]) || cham.includes(+n[1]))
   }
-// Lọc đầu
-if(dau.length){
-  r = r.filter(n => dau.includes(+n[0]))
-}
 
-// Lọc đuôi
-if(duoi.length){
-  r = r.filter(n => duoi.includes(+n[1]))
-}
+  // Lọc đầu
+  if(dau.length){
+    r = r.filter(n => dau.includes(+n[0]))
+  }
+
+  // Lọc đuôi
+  if(duoi.length){
+    r = r.filter(n => duoi.includes(+n[1]))
+  }
+
+  // THÊM = dàn lọc
   if(add.length){
-  r = [...new Set([...r, ...add])]
-}
-
-  // Bỏ
-  if(sub.length){
-    if(!r.length) r=[...ALL_NUMS]
-    r=r.filter(x=>!sub.includes(x))
+    r = r.filter(x => add.includes(x))
   }
 
-  r=[...new Set(r)].sort()
+  // BỎ
+  if(sub.length){
+    if(!r.length) r = [...ALL_NUMS]
+    r = r.filter(x => !sub.includes(x))
+  }
 
-  document.getElementById('tr'+i).innerText=r.join(',')
-  document.getElementById('tc'+i).innerText=r.length?r.length+' số':''
-  document.querySelector('#tbox'+i+' .actions').style.display=r.length?'flex':'none'
+  r = [...new Set(r)]
+    .map(x=>parseInt(x))
+    .sort((a,b)=>a-b)
+    .map(x=>x.toString().padStart(2,'0'))
+
+  document.getElementById('tr'+i).innerText = r.join(',')
+  document.getElementById('tc'+i).innerText = r.length ? r.length+' số' : ''
+  document.querySelector('#tbox'+i+' .actions').style.display = r.length ? 'flex' : 'none'
 
   autoT()
   save()
 }
-
 function autoT(){
   let last = MIN
 
@@ -1085,12 +1128,16 @@ function runChamTong(){
   ghepMode = 'tong'
 
   const cham = getCham()
+  const them = pairs('ghep_them')
+
+  let base = them.length ? [...them] : [...ALL_NUMS]
 
   if(!cham.length){
+    applyFilter(base)
     return
   }
 
-  let r = ALL_NUMS.filter(n => {
+  let r = base.filter(n => {
 
     const a = +n[0]
     const b = +n[1]
@@ -1127,23 +1174,27 @@ function runTrong(){
   ghepMode = 'trong'
 
   const cham = getCham()
+  const them = pairs('ghep_them')
 
-  let r = ALL_NUMS.filter(n=>{
+  let base = them.length ? [...them] : [...ALL_NUMS]
+
+  let r = base.filter(n=>{
     const a = +n[0]
     const b = +n[1]
     return cham.includes(a) && cham.includes(b)
   })
-
   applyFilter(r)
 }
-
 function runNgoai(){
 
   ghepMode = 'ngoai'
 
   const cham = getCham()
+  const them = pairs('ghep_them')
 
-  let r = ALL_NUMS.filter(n=>{
+  let base = them.length ? [...them] : [...ALL_NUMS]
+
+  let r = base.filter(n=>{
     const a = +n[0]
     const b = +n[1]
 
@@ -1153,7 +1204,6 @@ function runNgoai(){
 
   applyFilter(r)
 }
-
 function applyFilter(base=[]){
 
   let r = [...base]
@@ -1163,57 +1213,56 @@ function applyFilter(base=[]){
   const dau  = digits('ghep_dau')
   const duoi = digits('ghep_duoi')
   const boRaw = pairs('ghep_bo')
-
-let bo = []
-
-if(boRaw.length){
-  boRaw.forEach(num=>{
-    const a = +num[0]
-    const b = +num[1]
-
-    const ba = (a + 5) % 10
-    const bb = (b + 5) % 10
-
-    bo.push(
-      ''+a+b,''+b+a,
-      ''+a+bb,''+bb+a,
-      ''+ba+b,''+b+ba,
-      ''+ba+bb,''+bb+ba
-    )
-  })
-
-  bo = [...new Set(bo)]
-}
-
-if(bo.length)
-  r = r.filter(n => bo.includes(n))
   const them = pairs('ghep_them')
   const boSo = pairs('ghep_boSo')
 
+  let bo = []
+
+  if(boRaw.length){
+    boRaw.forEach(num=>{
+      const a = +num[0]
+      const b = +num[1]
+
+      const ba = (a + 5) % 10
+      const bb = (b + 5) % 10
+
+      bo.push(
+        ''+a+b,''+b+a,
+        ''+a+bb,''+bb+a,
+        ''+ba+b,''+b+ba,
+        ''+ba+bb,''+bb+ba
+      )
+    })
+    bo = [...new Set(bo)]
+  }
+
   if(cham.length)
-    r=r.filter(n=>cham.includes(+n[0])||cham.includes(+n[1]))
+    r = r.filter(n=>cham.includes(+n[0]) || cham.includes(+n[1]))
 
   if(tong.length)
-    r=r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
+    r = r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
 
   if(dau.length)
-    r=r.filter(n=>dau.includes(+n[0]))
+    r = r.filter(n=>dau.includes(+n[0]))
 
   if(duoi.length)
-    r=r.filter(n=>duoi.includes(+n[1]))
+    r = r.filter(n=>duoi.includes(+n[1]))
 
   if(bo.length)
-    r=r.filter(n=>bo.includes(n))
+    r = r.filter(n=>bo.includes(n))
 
-  if(boSo.length){
-  r = r.filter(x=>!boSo.includes(x))
-}
+  if(boSo.length)
+    r = r.filter(x=>!boSo.includes(x))
 
+  /* THÊM = dàn lọc */
   if(them.length){
-  r = [...new Set([...r, ...them])]
-}
+    r = r.filter(x=>them.includes(x))
+  }
 
-  r=[...new Set(r)].sort((a,b)=>a-b)
+  r = [...new Set(r)]
+      .map(x=>parseInt(x))
+      .sort((a,b)=>a-b)
+      .map(x=>x.toString().padStart(2,'0'))
 
   showKQ(r)
 }
@@ -1227,21 +1276,7 @@ function autoFilter(){
   const them = pairs('ghep_them')
   const boSo = pairs('ghep_boSo')
 
-  // nếu tất cả đều trống → xoá kết quả
-  if(
-    !cham.length &&
-    !tong.length &&
-    !dau.length &&
-    !duoi.length &&
-    !boRaw.length &&
-    !them.length &&
-    !boSo.length
-  ){
-    showKQ([])
-    return
-  }
-
-  let r = [...ALL_NUMS]
+  let r = them.length ? [...them] : []
 
   let bo = []
 
@@ -1249,7 +1284,6 @@ function autoFilter(){
     boRaw.forEach(num=>{
       const a = +num[0]
       const b = +num[1]
-
       const ba = (a+5)%10
       const bb = (b+5)%10
 
@@ -1260,8 +1294,11 @@ function autoFilter(){
         ''+ba+bb,''+bb+ba
       )
     })
-
     bo=[...new Set(bo)]
+  }
+
+  if(!r.length && (cham.length || tong.length || dau.length || duoi.length || bo.length)){
+    r=[...ALL_NUMS]
   }
 
   if(cham.length)
@@ -1282,8 +1319,10 @@ function autoFilter(){
   if(boSo.length)
     r=r.filter(x=>!boSo.includes(x))
 
-  if(them.length)
-    r=[...new Set([...r,...them])]
+  r = [...new Set(r)]
+      .map(x=>parseInt(x))
+      .sort((a,b)=>a-b)
+      .map(x=>x.toString().padStart(2,'0'))
 
   showKQ(r)
 }

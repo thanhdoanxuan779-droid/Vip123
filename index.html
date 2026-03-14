@@ -282,7 +282,8 @@ d.random_result = document.getElementById('random_result')?.innerText || '';
 d.random_count_text = document.getElementById('random_count_text')?.innerText || '';
   d.chem_result = document.getElementById('chem_result')?.innerText || ''
   d.chem_count  = document.getElementById('chem_count')?.innerText || ''
-
+d.t7r = document.getElementById('t7r')?.innerText || ''
+d.t7c = document.getElementById('t7c')?.innerText || ''
   localStorage.setItem(KEY,JSON.stringify(d))
 }
 function load(){
@@ -303,6 +304,10 @@ if(d.ghep_kq){
   document.getElementById('ghep_actions').style.display = 'flex'
 }else{
   document.getElementById('ghep_actions').style.display = 'none'
+}
+if(d.t7r){
+  document.getElementById('t7r').innerText = d.t7r
+  document.getElementById('t7c').innerText = d.t7c || ''
 }
   /* ===== TAB 2 – GHÉP TRÙNG ===== */
   if(d.gr){
@@ -1820,7 +1825,7 @@ kq=[...new Set(kq)].sort()
 
 document.getElementById('t7r').innerText = kq.join(',')
 document.getElementById('t7c').innerText = kq.length ? kq.length+' số' : ''
-
+save()
 }
 function copyTab7(){
 navigator.clipboard.writeText(
@@ -1867,8 +1872,9 @@ if(text){
   document.getElementById('t7_dan2').value = text
   calcTab7()
 }
-
 }
+load();
+calcTab7();
 </script>
 </body>
 </html>

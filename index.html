@@ -172,7 +172,7 @@ button{
 
 <div class="box">
 
-<input id="ghep_dan" placeholder="Nhập dàn số (vd: 12,34,56)">
+<input id="ghep_dan" placeholder="Nhập dàn số">
 
 <div style="display:flex;gap:8px;margin-top:8px">
   <input id="ghep_cham" placeholder="Chạm">
@@ -201,6 +201,57 @@ button{
 </div>
 
 <textarea placeholder="Kết quả" style="margin-top:8px"></textarea>
+
+</div>
+
+</div>
+<div id="tab7" class="tab">
+
+<div class="title">TẠO DÀN 2D-3D-4D</div>
+
+<div class="box">
+
+<!-- CÀNG -->
+<div style="display:flex;gap:8px">
+<input id="t7_cang5" placeholder="Càng 5D" oninput="calcTab7()">
+<input id="t7_cang4" placeholder="Càng 4D" oninput="calcTab7()">
+<input id="t7_cang3" placeholder="Càng 3D" oninput="calcTab7()">
+</div>
+<!-- DÀN -->
+<div style="margin-top:8px">
+<input id="t7_dan2" placeholder="Dàn 2D" oninput="calcTab7()">
+
+<div style="display:flex;gap:8px;margin-top:6px">
+<button onclick="pasteDan2()">DÁN</button>
+</div>
+</div>
+
+<!-- CHẠM TỔNG -->
+<div style="display:flex;gap:8px;margin-top:8px">
+<input id="t7_cham" placeholder="Chạm" oninput="calcTab7()">
+<input id="t7_tong" placeholder="Tổng" oninput="calcTab7()">
+</div>
+
+<!-- BỘ ĐẦU ĐUÔI -->
+<div style="display:flex;gap:8px;margin-top:8px">
+<input id="t7_bo" placeholder="Bộ" oninput="calcTab7()">
+<input id="t7_dau" placeholder="Đầu" oninput="calcTab7()">
+<input id="t7_duoi" placeholder="Đuôi" oninput="calcTab7()">
+</div>
+
+<!-- THÊM BỎ -->
+<div style="display:flex;gap:8px;margin-top:8px">
+<input id="t7_them" placeholder="Thêm" oninput="calcTab7()">
+<input id="t7_boSo" placeholder="Bỏ" oninput="calcTab7()">
+</div>
+
+<div style="display:flex;gap:8px;margin-top:10px">
+<button onclick="copyTab7()">COPY</button>
+<button onclick="clearTab7()">XOÁ</button>
+</div>
+
+<div id="t7r" class="result"></div>
+<div id="t7c" class="count"></div>
 
 </div>
 
@@ -1557,7 +1608,7 @@ document.addEventListener('touchend',e=>{
   let dy=e.changedTouches[0].clientY-sy
   if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)){
     let i=[...document.querySelectorAll('.tab')].findIndex(t=>t.classList.contains('active'))
-    if(dx<0&&i<5) showTab(i+1)
+    if(dx<0&&i<6) showTab(i+1)
     if(dx>0&&i>0) showTab(i-1)
   }
 },{passive:true})
@@ -1621,6 +1672,201 @@ function checkRandomEmpty(){
     document.getElementById('random_actions').style.display = 'none'
     save()
   }
+
+}
+function run3D4D(){
+
+  const d3 = document.getElementById('d3_input').value
+  const d4 = document.getElementById('d4_input').value
+
+  let r = []
+
+  if(d3){
+    const m = d3.match(/\d{3}/g)
+    if(m) r = [...r, ...m]
+  }
+
+  if(d4){
+    const m = d4.match(/\d{4}/g)
+    if(m) r = [...r, ...m]
+  }
+
+  r = [...new Set(r)]
+
+  document.getElementById('kq3d4d').innerText = r.join(',')
+}
+
+function copy3D4D(){
+  const t = document.getElementById('kq3d4d').innerText
+  navigator.clipboard.writeText(t)
+}
+function calcTab7(){
+
+const c5 = (document.getElementById('t7_cang5').value.match(/\d/g)||[])
+const c4 = (document.getElementById('t7_cang4').value.match(/\d/g)||[])
+const c3 = (document.getElementById('t7_cang3').value.match(/\d/g)||[])
+
+let d2 = (document.getElementById('t7_dan2').value.match(/\d{2}/g)||[])
+document.getElementById('t7_dan2').value = d2.join(',')
+
+const cham = digits('t7_cham')
+const tong = digits('t7_tong')
+const dau  = digits('t7_dau')
+const duoi = digits('t7_duoi')
+const boRaw = pairs('t7_bo')
+
+const them = pairs('t7_them')
+const boSo = pairs('t7_boSo')
+
+let r = d2.length ? [...d2] : []
+
+if(!r.length && (cham.length || tong.length || dau.length || duoi.length || boRaw.length)){
+  r = [...ALL_NUMS]
+}
+
+/* ===== BỘ ===== */
+
+let bo = []
+
+if(boRaw.length){
+
+  boRaw.forEach(num=>{
+
+    const a = +num[0]
+    const b = +num[1]
+
+    const ba = (a+5)%10
+    const bb = (b+5)%10
+
+    bo.push(
+      ''+a+b,''+b+a,
+      ''+a+bb,''+bb+a,
+      ''+ba+b,''+b+ba,
+      ''+ba+bb,''+bb+ba
+    )
+
+  })
+
+  bo = [...new Set(bo)]
+
+}
+
+/* ===== LỌC 2D ===== */
+
+if(cham.length)
+r=r.filter(n=>cham.includes(+n[0])||cham.includes(+n[1]))
+
+if(tong.length)
+r=r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
+
+if(dau.length)
+r=r.filter(n=>dau.includes(+n[0]))
+
+if(duoi.length)
+r=r.filter(n=>duoi.includes(+n[1]))
+
+if(bo.length)
+r=r.filter(n=>bo.includes(n))
+
+/* ===== THÊM ===== */
+
+if(them.length){
+  if(!r.length) r = [...them]
+  else r = r.filter(x => them.includes(x))
+}
+
+/* ===== BỎ ===== */
+
+if(boSo.length){
+  if(!r.length) r = [...ALL_NUMS]
+  r = r.filter(x => !boSo.includes(x))
+}
+
+/* ===== GHÉP ===== */
+
+let kq=[...r]
+
+if(c3.length && kq.length){
+let tmp=[]
+c3.forEach(c=>{
+kq.forEach(n=>{
+tmp.push(c+n)
+})
+})
+kq=tmp
+}
+
+if(c4.length && kq.length){
+let tmp=[]
+c4.forEach(c=>{
+kq.forEach(n=>{
+tmp.push(c+n)
+})
+})
+kq=tmp
+}
+
+if(c5.length && kq.length){
+let tmp=[]
+c5.forEach(c=>{
+kq.forEach(n=>{
+tmp.push(c+n)
+})
+})
+kq=tmp
+}
+
+kq=[...new Set(kq)].sort()
+
+document.getElementById('t7r').innerText = kq.join(',')
+document.getElementById('t7c').innerText = kq.length ? kq.length+' số' : ''
+
+}
+function copyTab7(){
+navigator.clipboard.writeText(
+document.getElementById('t7r').innerText
+)
+}
+function copyTab7(){
+  navigator.clipboard.writeText(
+    document.getElementById('t7r').innerText
+  )
+}
+function clearTab7(){
+
+document.getElementById('t7_dan2').value=''
+
+document.getElementById('t7_cang5').value=''
+document.getElementById('t7_cang4').value=''
+document.getElementById('t7_cang3').value=''
+
+document.getElementById('t7_cham').value=''
+document.getElementById('t7_tong').value=''
+document.getElementById('t7_dau').value=''
+document.getElementById('t7_duoi').value=''
+document.getElementById('t7_bo').value=''
+
+document.getElementById('t7_them').value=''
+document.getElementById('t7_boSo').value=''
+
+document.getElementById('t7r').innerText=''
+document.getElementById('t7c').innerText=''
+
+}
+async function pasteDan2(){
+
+let text=''
+
+try{
+  text = await navigator.clipboard.readText()
+}catch(e){
+  text = prompt("Dán dàn 2D vào đây")
+}
+
+if(text){
+  document.getElementById('t7_dan2').value = text
+  calcTab7()
+}
 
 }
 </script>

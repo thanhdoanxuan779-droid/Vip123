@@ -476,7 +476,7 @@ function out1(i,a){
 
 function auto1(){
 
-  let last = MIN;
+  let last = 0; // 🔥 đổi từ MIN → 0
 
   for(let i=1;i<=MAX;i++){
 
@@ -490,11 +490,14 @@ function auto1(){
     if(ch || to || da || du || add || sub){
       last = i
     }
-
   }
 
-  last = Math.min(MAX, last + 1)
-  last = Math.max(MIN, last)
+  // 🔥 xử lý đúng trường hợp rỗng
+  if(last === 0){
+    last = MIN
+  }else{
+    last = Math.min(MAX, last + 1)
+  }
 
   for(let i=1;i<=MAX;i++){
     const box = document.getElementById('b1_'+i)
@@ -502,7 +505,6 @@ function auto1(){
       box.style.display = i <= last ? 'block' : 'none'
     }
   }
-
 }
 function render1(){
   let h='<div class="title">CHẠM TỔNG</div>';
@@ -692,22 +694,41 @@ function removeAllDuplicate(){
   save()
 }
 function autoG(){
-  let last=MIN
-  for(let i=1;i<=MAX;i++){
-    if(document.getElementById('g'+i).value.trim()) last=i+1
-  }
-  last=Math.min(MAX,Math.max(MIN,last))
-  for(let i=1;i<=MAX;i++)
-    document.getElementById('gbox'+i).style.display=i<=last?'block':'none'
-}
-function clearG(){
+
+  let last = 0  // 🔥 không dùng MIN ở đây
 
   for(let i=1;i<=MAX;i++){
     const el = document.getElementById('g'+i)
-    if(el) el.value=''
+    if(el && el.value.trim()){
+      last = i   // chỉ lấy dàn cuối có dữ liệu
+    }
   }
 
-  const ids=[
+  // xử lý hiển thị
+  if(last === 0){
+    last = MIN   // không có dữ liệu → giữ 4 dàn
+  }else{
+    last = Math.min(MAX, last + 1) // có dữ liệu → mở thêm 1 dàn
+  }
+
+  // show/hide
+  for(let i=1;i<=MAX;i++){
+    const box = document.getElementById('gbox'+i)
+    if(box){
+      box.style.display = (i <= last) ? 'block' : 'none'
+    }
+  }
+}
+function clearG(){
+
+  // xoá toàn bộ dàn
+  for(let i=1;i<=MAX;i++){
+    const el = document.getElementById('g'+i)
+    if(el) el.value = ''
+  }
+
+  // xoá các input liên quan
+  const ids = [
     'ghep_input',
     'ghep_kq',
     'ghep_cham',
@@ -720,18 +741,22 @@ function clearG(){
   ]
 
   ids.forEach(id=>{
-    const el=document.getElementById(id)
-    if(el) el.value=''
+    const el = document.getElementById(id)
+    if(el) el.value = ''
   })
 
-  document.getElementById('gr').innerText=''
-  document.getElementById('gc').innerText=''
+  // xoá kết quả
+  document.getElementById('gr').innerText = ''
+  document.getElementById('gc').innerText = ''
 
-  const act=document.getElementById('gact')
-  if(act) act.style.display='none'
+  // ẩn nút
+  const act = document.getElementById('gact')
+  if(act) act.style.display = 'none'
 
-  document.getElementById('diffButtons').innerHTML=''
+  // xoá nút phụ
+  document.getElementById('diffButtons').innerHTML = ''
 
+  autoG()   // 🔥 bắt buộc để thu dàn
   save()
 }
 function generateDiffButtons(){
@@ -1292,112 +1317,115 @@ DÁN
 `
 }
 function getCham(){
-  const raw = document.getElementById('ghep_input').value
-  if(!raw) return []
+  const raw=document.getElementById('ghep_input').value||''
   return raw.replace(/\D/g,'').split('').map(Number)
 }
+
+function getThem(){
+  const raw=document.getElementById('ghep_them').value||''
+  return raw
+    .replace(/\D/g,' ')
+    .trim()
+    .split(/\s+/)
+    .filter(x=>x!=='')
+    .map(x=>x.padStart(2,'0'))
+}
+
 function runChamTong(){
 
-  ghepMode = 'tong'
+  ghepMode='tong'
 
-  const cham = getCham()
-  const them = pairs('ghep_them')
+  const cham=getCham()
 
-  let base = them.length ? [...them] : [...ALL_NUMS]
+  let r=[...ALL_NUMS]
 
-  if(!cham.length){
-    applyFilter(base)
-    return
+  if(cham.length){
+    r=r.filter(n=>{
+      const a=+n[0]
+      const b=+n[1]
+      const t=(a+b)%10
+      return cham.includes(a)||cham.includes(b)||cham.includes(t)
+    })
   }
-
-  let r = base.filter(n => {
-
-    const a = +n[0]
-    const b = +n[1]
-    const tong = (a+b)%10
-
-    return (
-      cham.includes(a) ||
-      cham.includes(b) ||
-      cham.includes(tong)
-    )
-
-  })
 
   applyFilter(r)
 }
+
+function runTrong(){
+
+  ghepMode='trong'
+
+  const cham=getCham()
+
+  let r=[...ALL_NUMS]
+
+  if(cham.length){
+    r=r.filter(n=>{
+      const a=+n[0]
+      const b=+n[1]
+      return cham.includes(a)&&cham.includes(b)
+    })
+  }
+
+  applyFilter(r)
+}
+
+function runNgoai(){
+
+  ghepMode='ngoai'
+
+  const cham=getCham()
+
+  let r=[...ALL_NUMS]
+
+  if(cham.length){
+    r=r.filter(n=>{
+      const a=+n[0]
+      const b=+n[1]
+      return (cham.includes(a)||cham.includes(b)) &&
+             !(cham.includes(a)&&cham.includes(b))
+    })
+  }
+
+  applyFilter(r)
+}
+
 function updateChamInput(){
 
-  const cham = getCham()
+  const cham=getCham()
 
   if(!cham.length){
-    showKQ([])
+    applyFilter([...ALL_NUMS])
     save()
     return
   }
 
-  if(ghepMode === 'tong') runChamTong()
-  if(ghepMode === 'trong') runTrong()
-  if(ghepMode === 'ngoai') runNgoai()
+  if(ghepMode==='tong') runChamTong()
+  else if(ghepMode==='trong') runTrong()
+  else runNgoai()
 
   save()
 }
-function runTrong(){
-
-  ghepMode = 'trong'
-
-  const cham = getCham()
-  const them = pairs('ghep_them')
-
-  let base = them.length ? [...them] : [...ALL_NUMS]
-
-  let r = base.filter(n=>{
-    const a = +n[0]
-    const b = +n[1]
-    return cham.includes(a) && cham.includes(b)
-  })
-  applyFilter(r)
-}
-function runNgoai(){
-
-  ghepMode = 'ngoai'
-
-  const cham = getCham()
-  const them = pairs('ghep_them')
-
-  let base = them.length ? [...them] : [...ALL_NUMS]
-
-  let r = base.filter(n=>{
-    const a = +n[0]
-    const b = +n[1]
-
-    return (cham.includes(a) || cham.includes(b)) &&
-           !(cham.includes(a) && cham.includes(b))
-  })
-
-  applyFilter(r)
-}
 function applyFilter(base=[]){
 
-  let r = [...base]
+  let r = base.length ? [...base] : [...ALL_NUMS]
 
-  const cham = digits('ghep_cham')
   const tong = digits('ghep_tong')
   const dau  = digits('ghep_dau')
   const duoi = digits('ghep_duoi')
   const boRaw = pairs('ghep_bo')
   const them = pairs('ghep_them')
-  const boSo = pairs('ghep_boSo')
+  const boSo = pairs('ghep_boSo').map(x=>x.toString().padStart(2,'0'))
 
-  let bo = []
+  let bo=[]
 
   if(boRaw.length){
     boRaw.forEach(num=>{
-      const a = +num[0]
-      const b = +num[1]
+      const a=+num[0]
+      const b=+num[1]
 
-      const ba = (a + 5) % 10
-      const bb = (b + 5) % 10
+      const ba=(a+5)%10
+      const bb=(b+5)%10
 
       bo.push(
         ''+a+b,''+b+a,
@@ -1406,36 +1434,35 @@ function applyFilter(base=[]){
         ''+ba+bb,''+bb+ba
       )
     })
-    bo = [...new Set(bo)]
+    bo=[...new Set(bo)]
   }
-
-  if(cham.length)
-    r = r.filter(n=>cham.includes(+n[0]) || cham.includes(+n[1]))
 
   if(tong.length)
-    r = r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
+    r=r.filter(n=>tong.includes((+n[0]+ +n[1])%10))
 
   if(dau.length)
-    r = r.filter(n=>dau.includes(+n[0]))
+    r=r.filter(n=>dau.includes(+n[0]))
 
   if(duoi.length)
-    r = r.filter(n=>duoi.includes(+n[1]))
+    r=r.filter(n=>duoi.includes(+n[1]))
 
   if(bo.length)
-    r = r.filter(n=>bo.includes(n))
+    r=r.filter(n=>bo.includes(n))
 
-  if(boSo.length)
-    r = r.filter(x=>!boSo.includes(x))
-
-  /* THÊM = dàn lọc */
+  /* THÊM chạy trước */
   if(them.length){
-    r = r.filter(x=>them.includes(x))
+    const add = them.map(x=>x.toString().padStart(2,'0'))
+    r=[...new Set([...r,...add])]
   }
 
-  r = [...new Set(r)]
-      .map(x=>parseInt(x))
-      .sort((a,b)=>a-b)
-      .map(x=>x.toString().padStart(2,'0'))
+  /* BỎ chạy sau */
+  if(boSo.length)
+    r=r.filter(x=>!boSo.includes(x))
+
+  r=[...new Set(r)]
+    .map(x=>parseInt(x))
+    .sort((a,b)=>a-b)
+    .map(x=>x.toString().padStart(2,'0'))
 
   showKQ(r)
 }
@@ -1449,16 +1476,16 @@ function autoFilter(){
   const them = pairs('ghep_them')
   const boSo = pairs('ghep_boSo')
 
-  let r = them.length ? [...them] : []
+  let r = []
 
   let bo = []
 
   if(boRaw.length){
     boRaw.forEach(num=>{
-      const a = +num[0]
-      const b = +num[1]
-      const ba = (a+5)%10
-      const bb = (b+5)%10
+      const a=+num[0]
+      const b=+num[1]
+      const ba=(a+5)%10
+      const bb=(b+5)%10
 
       bo.push(
         ''+a+b,''+b+a,
@@ -1470,7 +1497,7 @@ function autoFilter(){
     bo=[...new Set(bo)]
   }
 
-  if(!r.length && (cham.length || tong.length || dau.length || duoi.length || bo.length)){
+  if(cham.length || tong.length || dau.length || duoi.length || bo.length){
     r=[...ALL_NUMS]
   }
 
@@ -1492,10 +1519,14 @@ function autoFilter(){
   if(boSo.length)
     r=r.filter(x=>!boSo.includes(x))
 
-  r = [...new Set(r)]
-      .map(x=>parseInt(x))
-      .sort((a,b)=>a-b)
-      .map(x=>x.toString().padStart(2,'0'))
+  if(them.length){
+    r=[...new Set([...r,...them])]
+  }
+
+  r=[...new Set(r)]
+    .map(x=>parseInt(x))
+    .sort((a,b)=>a-b)
+    .map(x=>x.toString().padStart(2,'0'))
 
   showKQ(r)
 }
